@@ -1,68 +1,89 @@
 package Boxer::Graphic::Object::Record;
 
 use Moose;
+use Boxer::Graphic::Widget::Box;
 
-has 'outer_box' => ( isa => 'Boxer::Graphic::Box', is => 'rw' );
-has 'record'    => ( isa => 'Boxer::Object::Record', is => 'rw' );
+with 'Boxer::Graphic';
+has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
+
+use constant PADDING   => 10;
+use constant KEYHEIGHT => 30;
+use constant KEYWIDTH  => 100;
 
 sub BUILD {
     my ( $self ) = @_;
-    $self->outer_box( Boxer::Graphic::Box->new() );
+    $self->outer_box( Boxer::Graphic::Widget::Box->new() );
 }
 
-sub draw {
-    my ( $self, $cr ) = @_;
+sub geometry {
+    my ( $self ) = @_;
 
-warn "draw()\n";
-
-    $cr->save();
-
-    my $record = $self->record();
+    my $record = $self->object();
     my $data = $record->data();
 
     my @keys = keys %{ $data };
     my $nr_keys = scalar( @keys );
 
-    my $height = $nr_keys * 30;
-    my $width  = 200;
-    my $half_width = $width / 2;
+    my $height = ( $nr_keys * KEYHEIGHT ) + ( PADDING * 2 ) + ( ( $nr_keys - 1 ) * PADDING );
+    my $width  = ( KEYWIDTH * 2 ) + ( PADDING * 3 );
 
-    my $startx = 20;
-    my $starty = 20;
+    return ( $width, $height );
+}
 
-    #$outer_box->height( $height + 40 );
-    #$outer_box->width( $width + 40 );
-    #$outer_box->draw( $cr );
+sub draw {
+    my ( $self, $cr ) = @_;
 
-    $cr->set_line_width( 2 );
+    $cr->save();
 
-    $cr->rectangle(
-        $startx,
-        $starty,
-        $width,
-        $height,
-    );
+    my $record = $self->object();
+    my $data = $record->data();
 
-    my $yfrom = $starty;
-    for my $line_nr ( 1 .. ( $nr_keys - 1 ) ) {
-        $yfrom += 30;
-        $cr->move_to( $startx, $yfrom );
-        $cr->line_to( $startx + $width, $yfrom );
+    my @keys = keys %{ $data };
+    my $nr_keys = scalar( @keys );
+
+    my ( $width, $height ) = $self->geometry();
+
+    my ( $x, $y ) = $self->get_position();
+    my $startx = $x;
+    my $starty = $y;
+
+    my $box = Boxer::Graphic::Widget::Box->new();
+    $box->fill( 1 );
+    $box->color( [ 0.6, 0.8, 0.1 ] );
+    $box->set_position( $startx, $starty );
+    $box->set_geometry( $width, $height );
+    $box->draw( $cr );
+
+    $startx += PADDING;
+    $starty += PADDING;
+
+    $box->color( [ 0.8, 0.8, 0.6 ] );
+    for my $line_nr ( 1 .. $nr_keys ) {
+        $box->set_position( $startx, $starty );
+        $box->set_geometry( KEYWIDTH, KEYHEIGHT );
+        $box->draw( $cr );
+
+        $box->set_position( $startx + KEYWIDTH + PADDING, $starty );
+        $box->set_geometry( KEYWIDTH, KEYHEIGHT );
+        $box->draw( $cr );
+
+        $starty += KEYHEIGHT + PADDING;
     }
-    $cr->move_to( $startx + $half_width, $starty );
-    $cr->line_to( $startx + $half_width, $starty + $height );
-    $cr->stroke();
+    $starty = $y + PADDING;
 
     $cr->select_font_face( "Sans", 'normal', 'normal' );
     $cr->set_font_size( 20 );
 
-    $yfrom = $starty;
+    my $half_width = KEYWIDTH / 2;
+    my $yfrom = $starty;
     for my $key ( @keys ) {
-        $cr->move_to( $startx + 10, $yfrom + 22 );
+        $cr->move_to( $startx + 10, $starty + 22 );
         $cr->show_text( $key );
-        $cr->move_to( $startx + $half_width + 10, $yfrom + 22 );
+
+        $cr->move_to( $startx + KEYWIDTH + PADDING + 10, $starty + 22 );
         $cr->show_text( $data->{$key} );
-        $yfrom += 30;
+
+        $starty += KEYHEIGHT + PADDING;
     }
 
     $cr->restore();

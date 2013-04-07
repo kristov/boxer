@@ -6,9 +6,7 @@ use Cairo;
 use Gtk2 qw/-init/;
 use Glib qw/TRUE FALSE/;
 
-use Boxer::Object::Record;
-use Boxer::Graphic::Object::Record;
-use Boxer::Graphic::Box;
+use Boxer::Test;
 
 has 'win'     => ( isa => 'Gtk2::Window',        is => 'rw' );
 has 'da'      => ( isa => 'Gtk2::DrawingArea',   is => 'rw' );
@@ -90,22 +88,6 @@ sub add_objects {
     push @{ $list }, $_ for @objects;
 }
 
-sub test_record {
-    my ( $self ) = @_;
-
-    my $record = Boxer::Object::Record->new();
-    $record->data( {
-        hello => 'Hi',
-        from  => 'from',
-        here  => 'Boxer',
-    } );
-
-    my $grecord = Boxer::Graphic::Object::Record->new();
-    $grecord->record( $record );
-
-    return $grecord;
-}
-
 sub render {
     my ( $self, $widget, $event ) = @_;
     my $cr = Gtk2::Gdk::Cairo::Context->create( $widget->window );
@@ -117,7 +99,7 @@ sub render {
 sub run {
     my ( $self ) = @_;
 
-    $self->add_objects( $self->test_record() );
+    $self->add_objects( Boxer::Test->test_object() );
 
     $self->create_surface();
     $self->do_cairo_drawing();
@@ -152,7 +134,7 @@ sub handle_keypress {
 
     my $list = $self->objects();
     my $grecord = $list->[0];
-    my $record = $grecord->record();
+    my $record = $grecord->object();
     my $data = $record->data();
     $data->{Foo} = '10';
     $self->needs_draw( 1 );

@@ -1,15 +1,28 @@
-package Boxer::Graphic::Box;
+package Boxer::Graphic::Widget::Box;
 
 use Moose;
 
 use constant M_PI => 3.1415;
 
+with 'Boxer::Graphic';
 has 'width'         => ( isa => 'Int', is => 'rw', default => '100' );
 has 'height'        => ( isa => 'Int', is => 'rw', default => '100' );
 has 'corner_radius' => ( isa => 'Int', is => 'rw', default => '10' );
 has 'x'             => ( isa => 'Int', is => 'rw', default => '1' );
 has 'y'             => ( isa => 'Int', is => 'rw', default => '1' );
 has 'color'         => ( isa => 'ArrayRef', is => 'rw', default => sub { [ 0.2, 0.2, 0.9 ] } );
+has 'fill'          => ( isa => 'Int', is => 'rw' );
+
+sub set_geometry {
+    my ( $self, $width, $height ) = @_;
+    $self->height( $height );
+    $self->width( $width );
+}
+
+sub get_geometry {
+    my ( $self ) = @_;
+    return ( $self->width(), $self->height() );
+}
 
 sub draw {
     my ( $self, $cr ) = @_;
@@ -31,8 +44,8 @@ sub draw {
     $cr->arc( $x + $radius, $y + $height - $radius, $radius, M_PI * .5, M_PI );
     $cr->arc( $x + $radius, $y + $radius, $radius, M_PI, M_PI * 1.5 );
     $cr->set_source_rgb( @{ $color } );
-    $cr->stroke();
-    #$cr->fill;
+    $cr->stroke() if !$self->fill();
+    $cr->fill() if $self->fill();
 
     $cr->restore();
 }
