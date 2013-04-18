@@ -2,7 +2,8 @@ package Boxer::Test;
 
 use Moose;
 
-use Boxer::Graphic::Widget::ArgList;
+use Boxer::Object::Array;
+use Boxer::Graphic::Object::Array;
 
 use Boxer::Graphic::Object::CallFunc;
 use Boxer::Object::CallFunc;
@@ -14,19 +15,24 @@ use Boxer::Graphic::Object::Record;
 
 sub test_object {
     my ( $self ) = @_;
-    #return $self->arglist();
+    return $self->arglist();
     #return $self->callfunc();
-    return $self->record();
+    #return $self->record();
 }
 
 sub arglist {
     my ( $self ) = @_;
 
-    my $garglist = Boxer::Graphic::Widget::ArgList->new();
-    $garglist->set_position( 100, 100 );
-    $garglist->arg_list( [ 1, 2, 3, 4 ] );
+    my $array = Boxer::Object::Array->new();
+    $array->push( 1 );
+    $array->push( 2 );
+    $array->push( 3 );
 
-    return $garglist;
+    my $garray = Boxer::Graphic::Object::Array->new();
+    $garray->set_position( 100, 100 );
+    $garray->array( $array );
+
+    return $garray;
 }
 
 sub callfunc {

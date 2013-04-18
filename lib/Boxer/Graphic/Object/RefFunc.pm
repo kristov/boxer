@@ -6,7 +6,7 @@ use Boxer::Graphic::Widget::Box;
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 has 'reffunc'   => ( isa => 'Boxer::Object::RefFunc', is => 'rw' );
-has 'arglist'   => ( isa => 'Boxer::Graphic::Widget::ArgList', is => 'rw' );
+has 'arglist'   => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
 
 use constant PADDING => 10;
 

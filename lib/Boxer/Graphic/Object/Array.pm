@@ -1,10 +1,10 @@
-package Boxer::Graphic::Widget::ArgList;
+package Boxer::Graphic::Object::Array;
 
 use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
-has 'arg_list' => ( isa => 'ArrayRef', is => 'rw' );
+has 'array' => ( isa => 'Boxer::Object::Array', is => 'rw' );
 
 use constant HANDLEWID => 30;
 use constant ARGHEIGHT => 30;
@@ -15,10 +15,11 @@ sub geometry {
     my ( $self ) = @_;
 
     my ( $x, $y ) = $self->get_position();
-    my $arg_list = $self->arg_list();
-    $arg_list ||= [];
+    my $array = $self->array();
+    my $data = $array->data();
+    $data ||= [];
 
-    my $nr_items  = scalar( @{ $arg_list } );
+    my $nr_items  = scalar( @{ $data } );
     my $nr_spaces = 0;
     if ( $nr_items > 0 ) {
         $nr_spaces = $nr_items; # Would be -1, but add one for the handle
@@ -38,10 +39,11 @@ sub draw {
     $cr->save();
 
     my ( $x, $y ) = $self->get_position();
-    my $arg_list = $self->arg_list();
-    $arg_list ||= [];
+    my $array = $self->array();
+    my $data = $array->data();
+    $data ||= [];
 
-    my $nr_items = scalar( @{ $arg_list } );
+    my $nr_items = scalar( @{ $data } );
 
     my $box = Boxer::Graphic::Widget::Box->new();
     $box->fill( 1 );
@@ -62,7 +64,5 @@ sub draw {
 
     $cr->restore();
 }
-
-no Moose;
 
 1;
