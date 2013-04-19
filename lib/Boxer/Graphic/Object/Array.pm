@@ -11,6 +11,15 @@ use constant ARGHEIGHT => 30;
 use constant ARGWIDTH  => 30;
 use constant ARGSPACES => 10;
 
+sub listen {
+    return {
+        'Boxer::Object::Array' => {
+            'push' => 1,
+            'pop'  => 1,
+        },
+    };
+}
+
 sub geometry {
     my ( $self ) = @_;
 
