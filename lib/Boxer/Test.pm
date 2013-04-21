@@ -75,6 +75,4 @@ sub record {
     return $grecord;
 }
 
-no Moose;
-
 1;

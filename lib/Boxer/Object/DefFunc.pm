@@ -3,12 +3,19 @@ package Boxer::Object::DefFunc;
 use Moose;
 
 with 'Boxer::Object';
-has 'arg_list' => ( isa => 'Boxer::Object::Array', is => 'rw' );
-has 'body'     => ( isa => 'Boxer::Object::Array', is => 'rw' );
+has 'args' => ( isa => 'Boxer::Object::Array', is => 'rw' );
+has 'body' => ( isa => 'Boxer::Object::Array', is => 'rw' );
 
-sub BUILD {
-    my ( $self ) = @_;
-    $self->arg_list(
+sub set_args {
+    my ( $self, $args ) = @_;
+    $self->args( $args );
+    $self->send_message( 'set_args', [ $args ] );
+}
+
+sub set_body {
+    my ( $self, $body ) = @_;
+    $self->body( $body );
+    $self->send_message( 'set_body', [ $body ] );
 }
 
 1;
