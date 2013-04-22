@@ -1,4 +1,4 @@
-package Boxer::Object::Array;
+package Boxer::Object::Heap;
 
 use Moose;
 with 'Boxer::Object';

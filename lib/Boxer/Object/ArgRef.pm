@@ -1,7 +1,8 @@
 package Boxer::Object::ArgRef;
 
 use Moose;
+with 'Boxer::Object';
 
-has 'refs' => ( 'isa' => 'Ref', 'is' => 'rw' );
+sub refs { shift->PROPERTY( 'refs', @_ ) }
 
 1;

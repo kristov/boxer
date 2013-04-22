@@ -1,7 +1,8 @@
 package Boxer::Object::Number;
 
 use Moose;
+with 'Boxer::Object';
 
-has 'value' => ( 'isa' => 'Int', 'is' => 'rw' );
+sub value { shift->PROPERTY( 'value', @_ ) }
 
 1;

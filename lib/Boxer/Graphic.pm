@@ -17,6 +17,4 @@ sub set_position {
     $self->y( $y );
 }
 
-no Moose::Role;
-
 1;

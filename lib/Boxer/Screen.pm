@@ -12,6 +12,10 @@ has 'win'     => ( isa => 'Gtk2::Window',        is => 'rw' );
 has 'da'      => ( isa => 'Gtk2::DrawingArea',   is => 'rw' );
 has 'surface' => ( isa => 'Cairo::ImageSurface', is => 'rw' );
 has 'objects' => ( isa => 'ArrayRef',            is => 'rw' );
+has 'runtime' => ( isa => 'Ref',                 is => 'rw' );
+
+my %OBJECT;
+my %USED;
 
 sub BUILD {
     my ( $self ) = @_;
@@ -112,6 +116,21 @@ sub run {
         while ( Gtk2->events_pending() ) {
             Gtk2->main_iteration();
         }
+    }
+}
+
+sub send_message {
+    my ( $self, $mainref, $action, $parts ) = @_;
+
+    my ( $mainclass, $mainid ) = @{ $mainref };
+    if ( $action eq 'new' ) {
+        my $graphic_class = $mainclass;
+        $graphic_class =~ s/Boxer::Object/Boxer::Graphic::Object/;
+        if ( !$USED{$graphic_class} ) {
+            eval "use $graphic_class; 1;" or do { die "Could not use $graphic_class: $@" };
+        }
+        my $graphic_object = $graphic_class->new();
+        $OBJECT{$mainid} = $graphic_object;
     }
 }
 

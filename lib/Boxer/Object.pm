@@ -2,20 +2,48 @@ package Boxer::Object;
 
 use Moose::Role;
 
-has 'data'    => ( isa => 'Ref', is => 'rw' );
-has 'graphic' => ( isa => 'Ref', is => 'rw' );
+has 'runtime' => ( isa => 'Boxer::RunTime', 'is' => 'rw' );
 
-sub BUILD {
-    my ( $self ) = @_;
-    $self->send_message( 'new', $self );
+sub new {
+    my ( $class, $runtime ) = @_;
+    my $self = bless( {}, $class );
+    $self->runtime( $runtime );
+
+    $self->send_message( 'new' );
+    $runtime->new_object( $self );
+
+    $self->INIT() if $self->can( 'INIT' );
+    return $self;
+}
+
+sub PROPERTY {
+    my ( $self, $name, $value ) = @_;
+    if ( defined $value ) {
+        $self->{$name} = $value;
+        $self->send_message( $name, [ $value ] );
+    }
+    return $self->{$name};
 }
 
 sub send_message {
-    my ( $self, $name, $data ) = @_;
-    my $ref = ref( $self );
-    my $message = sprintf( '|%10s|%s|', $name, $ref );
-    warn "$message\n";
-    # TODO: send the message...
+    my ( $self, $action, $data ) = @_;
+    my $message = $self->create_message( $action, $data );
+    $self->runtime->send_message( $message );
+}
+
+sub create_message {
+    my ( $self, $action, $data ) = @_;
+
+    my @itemaddrs;
+    if ( $data ) {
+        for my $item ( @{ $data } ) {
+            my $itemaddr = "$item";
+            push @itemaddrs, $itemaddr;
+        }
+    }
+    my $refaddr = "$self";
+
+    return sprintf( '|%s|%s|%s|', $refaddr, $action, join( ',', @itemaddrs ) );
 }
 
 1;
