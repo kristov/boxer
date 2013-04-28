@@ -14,11 +14,15 @@ use Boxer::Screen;
 my $runtime = Boxer::RunTime->new();
 my $screen  = Boxer::Screen->new();
 
+# So messages can be sent to the screen
 $runtime->screen( $screen );
+
 $screen->runtime( $runtime );
 
+# Creates the heap
 $runtime->initialize();
 
 my $mainref = Boxer::TestCode->test_code( $runtime );
+$runtime->main( $mainref );
 
-$runtime->execute( $mainref );
+$screen->run();

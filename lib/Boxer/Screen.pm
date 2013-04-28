@@ -6,16 +6,20 @@ use Cairo;
 use Gtk2 qw/-init/;
 use Glib qw/TRUE FALSE/;
 
+use Data::Dumper;
+
 use Boxer::Test;
 
-has 'win'     => ( isa => 'Gtk2::Window',        is => 'rw' );
-has 'da'      => ( isa => 'Gtk2::DrawingArea',   is => 'rw' );
-has 'surface' => ( isa => 'Cairo::ImageSurface', is => 'rw' );
-has 'objects' => ( isa => 'ArrayRef',            is => 'rw' );
-has 'runtime' => ( isa => 'Ref',                 is => 'rw' );
+has 'win'     => ( 'isa' => 'Gtk2::Window', 'is' => 'rw' );
+has 'da'      => ( 'isa' => 'Gtk2::DrawingArea', 'is' => 'rw' );
+has 'surface' => ( 'isa' => 'Cairo::ImageSurface', 'is' => 'rw' );
+has 'objects' => ( 'isa' => 'ArrayRef', 'is' => 'rw' );
+has 'runtime' => ( 'isa' => 'Ref', 'is' => 'rw' );
+has 'graphic_started' => ( 'isa' => 'Int', 'is' => 'rw' );
 
 my %OBJECT;
 my %USED;
+my @MESSAGES;
 
 sub BUILD {
     my ( $self ) = @_;
@@ -64,22 +68,6 @@ sub do_cairo_drawing {
 #    $cr->show_text( "Disziplin ist Macht." );
 #    my $rgb2 = [ 0.8, 0.4, 0 ];
 
-=item
-
-    my $padding = 10;
-    my $x = 10;
-    my $y = 10;
-    my $objects = $self->objects();
-    foreach my $object ( @{ $objects } ) {
-        my $object_height = $object->height();
-        $object->move( $x, $y );
-        $object->draw( $cr );
-        $object->needs_draw( 0 );
-        $y = $y + $object_height + $padding;
-    }
-
-=cut
-
     my $list = $self->objects();
     $_->draw( $cr ) for @{ $list };
 
@@ -100,38 +88,91 @@ sub render {
     return FALSE;
 }
 
+sub add_main_ref {
+    my ( $self ) = @_;
+
+    my $mainref = $self->runtime->main();
+    my $ref = "$mainref";
+    my $addr;
+    if ( $ref =~ /=HASH\(([0-9a-z]+)\)/ ) {
+        $addr = $1;
+    }
+    else {
+        die "$ref";
+    }
+
+    my $gobject = $OBJECT{$addr};
+    die "could not find main object at $addr" if !defined $gobject;
+
+    $gobject->set_position( 10, 10 );
+    $self->add_objects( $gobject );
+}
+
 sub run {
     my ( $self ) = @_;
 
-    $self->add_objects( Boxer::Test->test_object() );
-
     $self->create_surface();
     $self->do_cairo_drawing();
+
+    $self->process_messages() while @MESSAGES;
+
+    $self->add_main_ref();
 
     while ( 1 ) {
         if ( $self->needs_draw() ) {
             $self->do_cairo_drawing();
             $self->invalidate_rect( 0, 0, 500, 500 );
+            $self->needs_draw( 0 );
         }
         while ( Gtk2->events_pending() ) {
             Gtk2->main_iteration();
         }
+        $self->runtime_iteration();
+        $self->process_messages();
+        #$self->needs_draw( 1 );
     }
+}
+
+sub runtime_iteration {
+    my ( $self ) = @_;
+    $self->runtime->iteration();
+}
+
+sub process_messages {
+    my ( $self ) = @_;
+    return if !@MESSAGES;
+    my $message = shift( @MESSAGES );
+    my ( $mainref, $action, $parts ) = @{ $message };
+    $self->process_message( $mainref, $action, $parts );
 }
 
 sub send_message {
     my ( $self, $mainref, $action, $parts ) = @_;
+    push @MESSAGES, [ $mainref, $action, $parts ];
+}
 
+sub process_message {
+    my ( $self, $mainref, $action, $parts ) = @_;
     my ( $mainclass, $mainid ) = @{ $mainref };
     if ( $action eq 'new' ) {
-        my $graphic_class = $mainclass;
-        $graphic_class =~ s/Boxer::Object/Boxer::Graphic::Object/;
-        if ( !$USED{$graphic_class} ) {
-            eval "use $graphic_class; 1;" or do { die "Could not use $graphic_class: $@" };
-        }
-        my $graphic_object = $graphic_class->new();
-        $OBJECT{$mainid} = $graphic_object;
+        $self->create_graphic( $mainclass, $mainid );
+        $self->needs_draw( 1 );
     }
+    else {
+        print "undefined action: $action for $mainclass\n";
+    }
+}
+
+sub create_graphic {
+    my ( $self, $mainclass, $mainid ) = @_;
+
+    my $graphic_class = $mainclass;
+    $graphic_class =~ s/Boxer::Object/Boxer::Graphic::Object/;
+    if ( !$USED{$graphic_class} ) {
+        eval "use $graphic_class; 1;" or do { die "Could not use $graphic_class: $@" };
+    }
+    my $graphic_object = $graphic_class->new();
+    $OBJECT{$mainid} = $graphic_object;
 }
 
 sub needs_draw {
@@ -150,12 +191,6 @@ sub handle_keypress {
     my ( $self, $widget, $event ) = @_;
 
     my $keyval = $event->keyval();
-
-    my $list = $self->objects();
-    my $grecord = $list->[0];
-    my $record = $grecord->object();
-    my $data = $record->data();
-    $data->{Foo} = '10';
     $self->needs_draw( 1 );
 
     #my $server = $self->server();
@@ -163,7 +198,5 @@ sub handle_keypress {
 
     return 1;
 }
-
-no Moose;
 
 1;

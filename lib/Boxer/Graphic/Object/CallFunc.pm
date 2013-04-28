@@ -4,7 +4,11 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
+
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
+
+has 'calls' => ( 'isa' => 'Boxer::Graphic::Object::RefFunc', 'is' => 'rw' );
+has 'args' => ( 'isa' => 'Boxer::Graphic::Object::Array', 'is' => 'rw' );
 
 use constant PADDING => 10;
 
@@ -23,15 +27,9 @@ sub draw {
     my ( $x, $y ) = $self->get_position();
     my ( $width, $height );
 
-    my $greffunc;
-
-    my $callfunc = $self->object();
-    if ( $callfunc ) {
-        my $reffunc = $callfunc->reffunc();
-        if ( $reffunc ) {
-            $greffunc = $reffunc->graphic();
-            ( $width, $height ) = $greffunc->get_geometry();
-        }
+    my $greffunc = $self->calls();
+    if ( $greffunc ) {
+        ( $width, $height ) = $greffunc->get_geometry();
     }
     else {
         ( $width, $height ) = ( 400, 60 );
@@ -42,12 +40,12 @@ sub draw {
     $outer_box->set_geometry( $width + ( PADDING * 2 ), $height + ( PADDING * 2 ) );
     $outer_box->draw( $cr );
 
-    $greffunc->set_position( $x + PADDING, $y + PADDING );
-    $greffunc->draw( $cr ) if $greffunc;
+    if ( $greffunc ) {
+        $greffunc->set_position( $x + PADDING, $y + PADDING );
+        $greffunc->draw( $cr );
+    }
 
     $cr->restore();
 }
-
-no Moose;
 
 1;

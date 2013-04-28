@@ -5,6 +5,7 @@ use Boxer::Object::Heap;
 
 has 'screen' => ( isa => 'Ref', is => 'rw' );
 has 'heap' => ( isa => 'Boxer::Object::Heap', is => 'rw' );
+has 'main' => ( isa => 'Boxer::Object::CallFunc', is => 'rw' );
 
 sub initialize {
     my ( $self ) = @_;
@@ -55,8 +56,13 @@ sub parse_identifier {
     return ( $class, $id );
 }
 
-sub execute {
-    my ( $self, $main ) = @_;
+sub iteration {
+    my ( $self ) = @_;
+    $self->step_forward();
+}
+
+sub step_forward {
+    my ( $self ) = @_;
 }
 
 1;
