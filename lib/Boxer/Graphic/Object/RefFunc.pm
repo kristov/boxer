@@ -5,8 +5,7 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has 'reffunc'   => ( isa => 'Boxer::Object::RefFunc', is => 'rw' );
-has 'arglist'   => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
+has 'refs'      => ( isa => 'Ref', is => 'rw' );
 
 use constant PADDING => 10;
 
@@ -16,10 +15,19 @@ sub BUILD {
     $self->outer_box->fill( 1 );
 }
 
-sub geometry {
+sub get_geometry {
     my ( $self ) = @_;
-    my ( $width, $height ) = $self->arglist->geometry();
-    return ( $width + ( PADDING * 2 ), $height + ( PADDING * 2 ) );
+
+    my $refs = $self->refs();
+    my ( $width, $height );
+
+    if ( $refs ) {
+        ( $width, $height ) = $refs->geometry();
+    }
+    else {
+        ( $width, $height ) = ( 30, 30 );
+    }
+    return ( $width, $height );
 }
 
 sub draw {
@@ -32,21 +40,10 @@ sub draw {
     my $outer_box = $self->outer_box();
 
     $outer_box->set_position( $x, $y );
-    $outer_box->set_geometry( $self->geometry() );
+    $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
-
-    my $arglist = $self->arglist();
-    $arglist->set_position( $x + PADDING, $y + PADDING );
-    $arglist->draw( $cr );
 
     $cr->restore();
 }
-
-sub get_geometry {
-    my ( $self ) = @_;
-    return $self->geometry();
-}
-
-no Moose;
 
 1;

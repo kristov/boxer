@@ -15,9 +15,9 @@ sub BUILD {
     $self->outer_box->fill( 1 );
 }
 
-sub geometry {
+sub get_geometry {
     my ( $self ) = @_;
-    return ( ARGHEIGHT + ( PADDING * 2 ), ARGHEIGHT + ( PADDING * 2 ) );
+    return ( ARGHEIGHT, ARGHEIGHT );
 }
 
 sub draw {
@@ -34,11 +34,6 @@ sub draw {
     $outer_box->draw( $cr );
 
     $cr->restore();
-}
-
-sub get_geometry {
-    my ( $self ) = @_;
-    return $self->geometry();
 }
 
 1;

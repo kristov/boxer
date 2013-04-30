@@ -4,31 +4,28 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
-has 'array' => ( isa => 'Boxer::Object::Array', is => 'rw' );
 
 use constant HANDLEWID => 30;
 use constant ARGHEIGHT => 30;
 use constant ARGWIDTH  => 30;
 use constant ARGSPACES => 10;
 
-sub listen {
-    return {
-        'Boxer::Object::Array' => {
-            'push' => 1,
-            'pop'  => 1,
-        },
-    };
+sub push {
+    my ( $self, $item ) = @_;
+    $self->{array} ||= [];
+    push @{ $self->{array} }, $item;
 }
 
-sub geometry {
+sub pop {
+}
+
+sub get_geometry {
     my ( $self ) = @_;
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->array();
-    my $data = $array->data();
-    $data ||= [];
+    my $array = $self->{array};
 
-    my $nr_items  = scalar( @{ $data } );
+    my $nr_items  = scalar( @{ $array } );
     my $nr_spaces = 0;
     if ( $nr_items > 0 ) {
         $nr_spaces = $nr_items; # Would be -1, but add one for the handle
@@ -48,11 +45,9 @@ sub draw {
     $cr->save();
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->array();
-    my $data = $array->data();
-    $data ||= [];
+    my $array = $self->{array};
 
-    my $nr_items = scalar( @{ $data } );
+    my $nr_items = scalar( @{ $array } );
 
     my $box = Boxer::Graphic::Widget::Box->new();
     $box->fill( 1 );

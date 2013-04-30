@@ -6,25 +6,24 @@ use Cairo;
 use Gtk2 qw/-init/;
 use Glib qw/TRUE FALSE/;
 
-use Data::Dumper;
-
-use Boxer::Test;
+use Boxer::GraphicManager;
 
 has 'win'     => ( 'isa' => 'Gtk2::Window', 'is' => 'rw' );
 has 'da'      => ( 'isa' => 'Gtk2::DrawingArea', 'is' => 'rw' );
 has 'surface' => ( 'isa' => 'Cairo::ImageSurface', 'is' => 'rw' );
 has 'objects' => ( 'isa' => 'ArrayRef', 'is' => 'rw' );
 has 'runtime' => ( 'isa' => 'Ref', 'is' => 'rw' );
+has 'needs_draw' => ( 'isa' => 'Int', 'is' => 'rw' );
 has 'graphic_started' => ( 'isa' => 'Int', 'is' => 'rw' );
-
-my %OBJECT;
-my %USED;
-my @MESSAGES;
+has 'graphic_manager' => ( 'isa' => 'Boxer::GraphicManager', 'is' => 'rw' );
 
 sub BUILD {
     my ( $self ) = @_;
 
     $self->objects( [] );
+    $self->graphic_manager( Boxer::GraphicManager->new() );
+
+    $self->needs_draw( 1 );
 
     # The graphical environment
     $self->win( Gtk2::Window->new( 'toplevel' ) );
@@ -69,7 +68,9 @@ sub do_cairo_drawing {
 #    my $rgb2 = [ 0.8, 0.4, 0 ];
 
     my $list = $self->objects();
-    $_->draw( $cr ) for @{ $list };
+    for my $gobject ( @{ $list } ) {
+        $gobject->draw( $cr );
+    }
 
     $self->needs_draw( 0 );
 }
@@ -101,7 +102,7 @@ sub add_main_ref {
         die "$ref";
     }
 
-    my $gobject = $OBJECT{$addr};
+    my $gobject = $self->graphic_manager->graphic_object( $addr );
     die "could not find main object at $addr" if !defined $gobject;
 
     $gobject->set_position( 10, 10 );
@@ -114,9 +115,10 @@ sub run {
     $self->create_surface();
     $self->do_cairo_drawing();
 
-    $self->process_messages() while @MESSAGES;
+    $self->graphic_manager->process_pending_messages();
 
     $self->add_main_ref();
+    $self->needs_draw( 1 );
 
     while ( 1 ) {
         if ( $self->needs_draw() ) {
@@ -128,8 +130,8 @@ sub run {
             Gtk2->main_iteration();
         }
         $self->runtime_iteration();
-        $self->process_messages();
-        #$self->needs_draw( 1 );
+        my $needs_draw = $self->graphic_manager->process_pending_messages();
+        $self->needs_draw( $needs_draw );
     }
 }
 
@@ -138,47 +140,9 @@ sub runtime_iteration {
     $self->runtime->iteration();
 }
 
-sub process_messages {
-    my ( $self ) = @_;
-    return if !@MESSAGES;
-    my $message = shift( @MESSAGES );
-    my ( $mainref, $action, $parts ) = @{ $message };
-    $self->process_message( $mainref, $action, $parts );
-}
-
 sub send_message {
     my ( $self, $mainref, $action, $parts ) = @_;
-    push @MESSAGES, [ $mainref, $action, $parts ];
-}
-
-sub process_message {
-    my ( $self, $mainref, $action, $parts ) = @_;
-    my ( $mainclass, $mainid ) = @{ $mainref };
-    if ( $action eq 'new' ) {
-        $self->create_graphic( $mainclass, $mainid );
-        $self->needs_draw( 1 );
-    }
-    else {
-        print "undefined action: $action for $mainclass\n";
-    }
-}
-
-sub create_graphic {
-    my ( $self, $mainclass, $mainid ) = @_;
-
-    my $graphic_class = $mainclass;
-    $graphic_class =~ s/Boxer::Object/Boxer::Graphic::Object/;
-    if ( !$USED{$graphic_class} ) {
-        eval "use $graphic_class; 1;" or do { die "Could not use $graphic_class: $@" };
-    }
-    my $graphic_object = $graphic_class->new();
-    $OBJECT{$mainid} = $graphic_object;
-}
-
-sub needs_draw {
-    my ( $self, $needs_draw ) = @_;
-    $self->{needs_draw} = $needs_draw if defined $needs_draw;
-    return $self->{needs_draw};
+    $self->graphic_manager->send_message( $mainref, $action, $parts );
 }
 
 sub invalidate_rect {
