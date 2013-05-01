@@ -5,11 +5,6 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 
-use constant HANDLEWID => 30;
-use constant ARGHEIGHT => 30;
-use constant ARGWIDTH  => 30;
-use constant ARGSPACES => 10;
-
 sub push {
     my ( $self, $item ) = @_;
     $self->{array} ||= [];
@@ -22,6 +17,9 @@ sub pop {
 sub get_geometry {
     my ( $self ) = @_;
 
+    my $SIZEUNIT = $self->SIZEUNIT();
+    my $PADDING  = $self->PADDING();
+
     my ( $x, $y ) = $self->get_position();
     my $array = $self->{array};
 
@@ -31,10 +29,10 @@ sub get_geometry {
         $nr_spaces = $nr_items; # Would be -1, but add one for the handle
     }
 
-    my $width = ( $nr_items * ARGWIDTH ) + ( $nr_spaces * ARGSPACES );
-    $width += HANDLEWID;
+    my $width = ( $nr_items * $SIZEUNIT ) + ( $nr_spaces * $PADDING );
+    $width += $SIZEUNIT;
 
-    my $height = ARGHEIGHT;
+    my $height = $SIZEUNIT;
 
     return ( $width, $height );
 }
@@ -44,6 +42,9 @@ sub draw {
 
     $cr->save();
 
+    my $SIZEUNIT = $self->SIZEUNIT();
+    my $PADDING  = $self->PADDING();
+
     my ( $x, $y ) = $self->get_position();
     my $array = $self->{array};
 
@@ -52,18 +53,18 @@ sub draw {
     my $box = Boxer::Graphic::Widget::Box->new();
     $box->fill( 1 );
     $box->set_position( $x, $y );
-    $box->set_geometry( HANDLEWID, HANDLEWID );
+    $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
     $box->color( [ 0.6, 0.6, 0.1 ] );
     $box->draw( $cr );
 
-    $x += ( HANDLEWID + ARGSPACES );
+    $x += ( $SIZEUNIT + $PADDING );
     for my $thing ( 1 .. $nr_items ) {
         my $idx = $thing - 1;
         $box->set_position( $x, $y );
-        $box->set_geometry( ARGWIDTH, ARGHEIGHT );
+        $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
         $box->color( [ 0.1, 0.6, 0.6 ] );
         $box->draw( $cr );
-        $x += ( ARGWIDTH + ARGSPACES );
+        $x += ( $SIZEUNIT + $PADDING );
     }
 
     $cr->restore();

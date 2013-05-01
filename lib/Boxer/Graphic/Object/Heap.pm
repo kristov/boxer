@@ -4,42 +4,39 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
-has 'array' => ( isa => 'Boxer::Object::Array', is => 'rw' );
 
-use constant HANDLEWID => 30;
-use constant ARGHEIGHT => 30;
-use constant ARGWIDTH  => 30;
-use constant ARGSPACES => 10;
-
-sub listen {
-    return {
-        'Boxer::Object::Heap' => {
-            'push' => 1,
-            'pop'  => 1,
-        },
-    };
+sub push {
+    my ( $self, $item ) = @_;
+    $self->{array} ||= [];
+    push @{ $self->{array} }, $item;
 }
 
-sub geometry {
+sub pop {
+}
+
+sub get_geometry {
     my ( $self ) = @_;
 
-    my ( $x, $y ) = $self->get_position();
-    my $array = $self->array();
-    my $data = $array->data();
-    $data ||= [];
+    my $SIZEUNIT = $self->SIZEUNIT();
+    my $PADDING = $self->PADDING();
 
-    my $nr_items  = scalar( @{ $data } );
+    my ( $x, $y ) = $self->get_position();
+    my $array = $self->{array};
+
+    my $nr_items  = scalar( @{ $array } );
     my $nr_spaces = 0;
     if ( $nr_items > 0 ) {
-        $nr_spaces = $nr_items; # Would be -1, but add one for the handle
+        $nr_spaces = $nr_items - 1;
     }
 
-    my $width = ( $nr_items * ARGWIDTH ) + ( $nr_spaces * ARGSPACES );
-    $width += HANDLEWID;
+    my $max_width = $SIZEUNIT;
+    for my $item ( @{ $array } ) {
+        my ( $iwidth, $iheight ) = $item->get_geometry();
+        $max_width = $iwidth if $iwidth > $max_width;
+    }
+    my $height = ( $nr_items * $SIZEUNIT ) + ( $nr_spaces * $PADDING );
 
-    my $height = ARGHEIGHT;
-
-    return ( $width, $height );
+    return ( $max_width + ( $PADDING * 2 ), $height + ( $PADDING * 2 ) );
 }
 
 sub draw {
@@ -47,28 +44,32 @@ sub draw {
 
     $cr->save();
 
-    my ( $x, $y ) = $self->get_position();
-    my $array = $self->array();
-    my $data = $array->data();
-    $data ||= [];
+    my $SIZEUNIT = $self->SIZEUNIT();
+    my $PADDING = $self->PADDING();
 
-    my $nr_items = scalar( @{ $data } );
+    my ( $x, $y ) = $self->get_position();
+    my $array = $self->{array};
+
+    my $nr_items = scalar( @{ $array } );
+
+    my ( $width, $height ) = $self->get_geometry();
 
     my $box = Boxer::Graphic::Widget::Box->new();
     $box->fill( 1 );
     $box->set_position( $x, $y );
-    $box->set_geometry( HANDLEWID, HANDLEWID );
-    $box->color( [ 0.6, 0.6, 0.1 ] );
+    $box->set_geometry( $width, $height );
+    $box->color( [ 0.2, 0.2, 0.2 ] );
     $box->draw( $cr );
 
-    $x += ( HANDLEWID + ARGSPACES );
-    for my $thing ( 1 .. $nr_items ) {
-        my $idx = $thing - 1;
-        $box->set_position( $x, $y );
-        $box->set_geometry( ARGWIDTH, ARGHEIGHT );
-        $box->color( [ 0.1, 0.6, 0.6 ] );
-        $box->draw( $cr );
-        $x += ( ARGWIDTH + ARGSPACES );
+    $x += $PADDING;
+    $y += $PADDING;
+
+    for my $item ( @{ $array } ) {
+        $item->set_position( $x, $y );
+        my ( $iwidth, $iheight ) = $item->get_geometry();
+        die "$item: " if !$iheight;
+        $item->draw( $cr );
+        $y += ( $iheight + $PADDING );
     }
 
     $cr->restore();

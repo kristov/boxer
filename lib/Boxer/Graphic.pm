@@ -3,8 +3,10 @@ package Boxer::Graphic;
 use Moose::Role;
 
 has 'graphic_manager' => ( isa => 'Boxer::GraphicManager', is => 'rw' );
-has 'x'      => ( isa => 'Int', is => 'rw' );
-has 'y'      => ( isa => 'Int', is => 'rw' );
+has 'x' => ( isa => 'Int', is => 'rw' );
+has 'y' => ( isa => 'Int', is => 'rw' );
+has 'PADDING' => ( isa => 'Int', is => 'rw', default => 5 );
+has 'SIZEUNIT' => ( isa => 'Int', is => 'rw', default => 20 );
 
 sub get_position {
     my ( $self ) = @_;

@@ -6,9 +6,6 @@ use Boxer::Graphic::Widget::Box;
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 
-use constant ARGHEIGHT => 30;
-use constant PADDING => 10;
-
 sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
@@ -17,7 +14,8 @@ sub BUILD {
 
 sub get_geometry {
     my ( $self ) = @_;
-    return ( ARGHEIGHT, ARGHEIGHT );
+    my $SIZEUNIT = $self->SIZEUNIT();
+    return ( $SIZEUNIT, $SIZEUNIT );
 }
 
 sub draw {
@@ -30,7 +28,7 @@ sub draw {
     my $outer_box = $self->outer_box();
 
     $outer_box->set_position( $x, $y );
-    $outer_box->set_geometry( $self->geometry() );
+    $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
 
     $cr->restore();

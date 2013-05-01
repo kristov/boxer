@@ -7,8 +7,6 @@ with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 has 'refs'      => ( isa => 'Ref', is => 'rw' );
 
-use constant PADDING => 10;
-
 sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
@@ -18,6 +16,8 @@ sub BUILD {
 sub get_geometry {
     my ( $self ) = @_;
 
+    my $SIZEUNIT = $self->SIZEUNIT();
+
     my $refs = $self->refs();
     my ( $width, $height );
 
@@ -25,7 +25,7 @@ sub get_geometry {
         ( $width, $height ) = $refs->geometry();
     }
     else {
-        ( $width, $height ) = ( 30, 30 );
+        ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
     }
     return ( $width, $height );
 }

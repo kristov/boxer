@@ -109,6 +109,26 @@ sub add_main_ref {
     $self->add_objects( $gobject );
 }
 
+sub add_heap {
+    my ( $self ) = @_;
+
+    my $heapref = $self->runtime->heap();
+    my $ref = "$heapref";
+    my $addr;
+    if ( $ref =~ /=HASH\(([0-9a-z]+)\)/ ) {
+        $addr = $1;
+    }
+    else {
+        die "$ref";
+    }
+
+    my $gobject = $self->graphic_manager->graphic_object( $addr );
+    die "could not find heap object at $addr" if !defined $gobject;
+
+    $gobject->set_position( 10, 10 );
+    $self->add_objects( $gobject );
+}
+
 sub run {
     my ( $self ) = @_;
 
@@ -117,7 +137,9 @@ sub run {
 
     $self->graphic_manager->process_pending_messages();
 
-    $self->add_main_ref();
+    #$self->add_main_ref();
+    $self->add_heap();
+
     $self->needs_draw( 1 );
 
     while ( 1 ) {

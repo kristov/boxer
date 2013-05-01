@@ -5,11 +5,11 @@ use Moose;
 use constant M_PI => 3.1415;
 
 with 'Boxer::Graphic';
-has 'width'         => ( isa => 'Int', is => 'rw', default => '100' );
-has 'height'        => ( isa => 'Int', is => 'rw', default => '100' );
-has 'corner_radius' => ( isa => 'Int', is => 'rw', default => '10' );
-has 'x'             => ( isa => 'Int', is => 'rw', default => '1' );
-has 'y'             => ( isa => 'Int', is => 'rw', default => '1' );
+has 'width'         => ( isa => 'Int', is => 'rw', default => 100 );
+has 'height'        => ( isa => 'Int', is => 'rw', default => 100 );
+has 'corner_radius' => ( isa => 'Int', is => 'rw', default => 5 );
+has 'x'             => ( isa => 'Int', is => 'rw', default => 1 );
+has 'y'             => ( isa => 'Int', is => 'rw', default => 1 );
 has 'color'         => ( isa => 'ArrayRef', is => 'rw', default => sub { [ 0.2, 0.2, 0.9 ] } );
 has 'fill'          => ( isa => 'Int', is => 'rw' );
 
