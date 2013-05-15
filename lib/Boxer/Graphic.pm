@@ -23,7 +23,13 @@ sub dispatch {
     my ( $self, $action, $parts ) = @_;
     if ( $self->can( $action ) ) {
         my $manager = $self->graphic_manager();
-        my $gobject = $manager->graphic_object( $parts->[0]->[1] );
+        my $gobject;
+        if ( $parts->[0]->[0] =~ /CONSTANT$/ ) {
+            $gobject = $parts->[0]->[1];
+        }
+        else {
+            $gobject = $manager->graphic_object( $parts->[0]->[1] );
+        }
         $self->$action( $gobject );
     }
     else {

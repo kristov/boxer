@@ -5,8 +5,8 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has 'reffunc'   => ( isa => 'Boxer::Object::RefFunc', is => 'rw' );
-has 'arglist'   => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
+has 'body' => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
+has 'args' => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
 
 sub BUILD {
     my ( $self ) = @_;
@@ -20,14 +20,23 @@ sub get_geometry {
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING = $self->PADDING();
 
-    my $arglist = $self->arglist();
+    my $args = $self->args();
     my ( $width, $height );
-    if ( $arglist ) {
-        ( $width, $height ) = $arglist->geometry();
+    if ( $args ) {
+        ( $width, $height ) = $args->get_geometry();
     }
     else {
         ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
     }
+
+    my $body = $self->body();
+    if ( $body ) {
+        $body->orientation( 'vertical' );
+        my ( $bwidth, $bheight ) = $body->get_geometry();
+        $width = $bwidth if $bwidth > $width;
+        $height += $bheight + $PADDING;
+    }
+
     return ( $width + ( $PADDING * 2 ), $height + ( $PADDING * 2 ) );
 }
 
@@ -46,10 +55,18 @@ sub draw {
     $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
 
-    my $arglist = $self->arglist();
-    if ( $arglist ) {
-        $arglist->set_position( $x + $PADDING, $y + $PADDING );
-        $arglist->draw( $cr );
+    my $args = $self->args();
+    my ( $awidth, $aheight );
+    if ( $args ) {
+        ( $awidth, $aheight ) = $args->get_geometry();
+        $args->set_position( $x + $PADDING, $y + $PADDING );
+        $args->draw( $cr );
+    }
+
+    my $body = $self->body();
+    if ( $body ) {
+        $body->set_position( $x + $PADDING, $y + ( $PADDING * 2 ) + $aheight );
+        $body->draw( $cr );
     }
 
     $cr->restore();

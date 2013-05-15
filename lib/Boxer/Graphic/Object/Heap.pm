@@ -26,17 +26,19 @@ sub get_geometry {
     my $nr_items  = scalar( @{ $array } );
     my $nr_spaces = 0;
     if ( $nr_items > 0 ) {
-        $nr_spaces = $nr_items - 1;
+        $nr_spaces = $nr_items + 1;
     }
 
+    my $height = 0;
     my $max_width = $SIZEUNIT;
     for my $item ( @{ $array } ) {
         my ( $iwidth, $iheight ) = $item->get_geometry();
+        $height += $iheight;
         $max_width = $iwidth if $iwidth > $max_width;
     }
-    my $height = ( $nr_items * $SIZEUNIT ) + ( $nr_spaces * $PADDING );
+    $height += ( $nr_spaces * $PADDING );
 
-    return ( $max_width + ( $PADDING * 2 ), $height + ( $PADDING * 2 ) );
+    return ( $max_width + ( $PADDING * 2 ), $height );
 }
 
 sub draw {
@@ -65,6 +67,7 @@ sub draw {
     $y += $PADDING;
 
     for my $item ( @{ $array } ) {
+        $item->orientation( 'horizontal' ) if $item->can( 'orientation' );
         $item->set_position( $x, $y );
         my ( $iwidth, $iheight ) = $item->get_geometry();
         die "$item: " if !$iheight;

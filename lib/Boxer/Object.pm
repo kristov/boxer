@@ -37,7 +37,13 @@ sub create_message {
     my @itemaddrs;
     if ( $data ) {
         for my $item ( @{ $data } ) {
-            my $itemaddr = "$item";
+            my $itemaddr;
+            if ( ref $item ) {
+                $itemaddr = "$item";
+            }
+            else {
+                $itemaddr = "Boxer::Object::CONSTANT=HASH($item)";
+            }
             push @itemaddrs, $itemaddr;
         }
     }

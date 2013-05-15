@@ -6,7 +6,9 @@ my %SUPPORTED = qw(
     new    1
     calls  1
     args   1
+    body   1
     push   1
+    value  1
 );
 
 sub BUILD {
@@ -48,7 +50,7 @@ sub process_message {
         return 1;
     }
     else {
-        print "undefined action: $action for $mainclass\n";
+        print "unsupported action: $action for $mainclass\n";
     }
 
     return 0;
@@ -84,9 +86,10 @@ sub _graphic_class_from_object {
 
 sub graphic_object {
     my ( $self, $id ) = @_;
-    my $gobject = $self->{OBJECT}->{$id};
-    die "Could not find object for id $id" if !$gobject;
-    return $gobject;
+    if ( exists $self->{OBJECT}->{$id} ) {
+        return $self->{OBJECT}->{$id};
+    }
+    die "Could not find object for id $id";
 }
 
 1;
