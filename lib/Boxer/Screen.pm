@@ -16,6 +16,7 @@ has 'runtime' => ( 'isa' => 'Ref', 'is' => 'rw' );
 has 'needs_draw' => ( 'isa' => 'Int', 'is' => 'rw' );
 has 'graphic_started' => ( 'isa' => 'Int', 'is' => 'rw' );
 has 'graphic_manager' => ( 'isa' => 'Boxer::GraphicManager', 'is' => 'rw' );
+has 'selected_heap' => ( 'isa' => 'Int', 'is' => 'rw' );
 
 sub BUILD {
     my ( $self ) = @_;
@@ -177,12 +178,70 @@ sub handle_keypress {
     my ( $self, $widget, $event ) = @_;
 
     my $keyval = $event->keyval();
+
+    my $code2key = {
+        65362 => 'up',
+        65364 => 'down',
+        65361 => 'left',
+        65363 => 'right',
+    };
+
+    if ( $code2key->{$keyval} ) {
+        $self->arrow_keypress( $code2key->{$keyval} );
+    }
+
     $self->needs_draw( 1 );
 
     #my $server = $self->server();
     #$server->handle_keypress( $keyval ) if $keyval;
 
     return 1;
+}
+
+sub arrow_keypress {
+    my ( $self, $arrow ) = @_;
+
+    my $index = $self->selected_heap();
+    if ( !defined $index ) {
+        $index = 0;
+        $self->selected_heap( $index );
+    }
+
+    my $handler = {
+        up => sub {
+            my $heapref = $self->runtime->heap();
+            my $length = $heapref->length();
+            return if $length == 0;
+            my $index = $self->selected_heap();
+            if ( $index == 0 ) {
+                $index = $length - 1;
+                $self->selected_heap( $index );
+            }
+            else {
+                $index--;
+                $self->selected_heap( $index );
+            }
+        },
+        down => sub {
+            my $heapref = $self->runtime->heap();
+            my $length = $heapref->length();
+            return if $length == 0;
+            my $index = $self->selected_heap();
+            if ( $index >= ( $length - 1 ) ) {
+                $index = 0;
+                $self->selected_heap( $index );
+            }
+            else {
+                $index++;
+                $self->selected_heap( $index );
+            }
+        },
+    };
+
+    if ( $handler->{$arrow} ) {
+        $handler->{$arrow}->();
+print STDERR $self->selected_heap() . "\n";
+    }
 }
 
 1;

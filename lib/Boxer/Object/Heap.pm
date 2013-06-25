@@ -3,12 +3,21 @@ package Boxer::Object::Heap;
 use Moose;
 with 'Boxer::Object';
 
-sub INIT {
+sub boxer_init {
     my ( $self ) = @_;
     $self->{array} = [];
 }
 
 sub array { shift->PROPERTY( 'array', @_ ) }
+
+sub length {
+    my ( $self ) = @_;
+    my $array = $self->array();
+    if ( ref $array ) {
+        return scalar( @{ $array } );
+    }
+    return 0;
+}
 
 sub push {
     my ( $self, $item ) = @_;

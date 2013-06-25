@@ -3,7 +3,7 @@ package Boxer::Object::Array;
 use Moose;
 with 'Boxer::Object';
 
-sub INIT {
+sub boxer_init {
     my ( $self ) = @_;
     $self->{array} = [];
 }

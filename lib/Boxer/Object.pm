@@ -12,7 +12,7 @@ sub new {
     $self->send_message( 'new' );
     $runtime->new_object( $self );
 
-    $self->INIT() if $self->can( 'INIT' );
+    $self->boxer_init() if $self->can( 'boxer_init' );
     return $self;
 }
 
