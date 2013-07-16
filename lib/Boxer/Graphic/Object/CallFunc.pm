@@ -6,7 +6,6 @@ use Boxer::Graphic::Widget::Box;
 with 'Boxer::Graphic';
 
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-
 has 'calls' => ( 'isa' => 'Ref', 'is' => 'rw' );
 has 'args' => ( 'isa' => 'Boxer::Graphic::Object::Array', 'is' => 'rw' );
 
@@ -15,6 +14,11 @@ sub BUILD {
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
     $self->outer_box->color( [ 0.6, 0.8, 0.4 ] );
     $self->outer_box->fill( 1 );
+}
+
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
 }
 
 sub get_geometry {

@@ -16,7 +16,6 @@ has 'runtime' => ( 'isa' => 'Ref', 'is' => 'rw' );
 has 'needs_draw' => ( 'isa' => 'Int', 'is' => 'rw' );
 has 'graphic_started' => ( 'isa' => 'Int', 'is' => 'rw' );
 has 'graphic_manager' => ( 'isa' => 'Boxer::GraphicManager', 'is' => 'rw' );
-has 'selected_heap' => ( 'isa' => 'Int', 'is' => 'rw' );
 
 sub BUILD {
     my ( $self ) = @_;
@@ -72,7 +71,6 @@ sub do_cairo_drawing {
     for my $gobject ( @{ $list } ) {
         $gobject->draw( $cr );
     }
-
     $self->needs_draw( 0 );
 }
 
@@ -94,17 +92,8 @@ sub add_main_ref {
     my ( $self ) = @_;
 
     my $mainref = $self->runtime->main();
-    my $ref = "$mainref";
-    my $addr;
-    if ( $ref =~ /=HASH\(([0-9a-z]+)\)/ ) {
-        $addr = $1;
-    }
-    else {
-        die "$ref";
-    }
-
-    my $gobject = $self->graphic_manager->graphic_object( $addr );
-    die "could not find main object at $addr" if !defined $gobject;
+    my $gobject = $self->graphic_manager->graphic_object_from_object( $mainref );
+    die "could not find main object in graphic manager" if !defined $gobject;
 
     $gobject->set_position( 10, 10 );
     $self->add_objects( $gobject );
@@ -114,17 +103,8 @@ sub add_heap {
     my ( $self ) = @_;
 
     my $heapref = $self->runtime->heap();
-    my $ref = "$heapref";
-    my $addr;
-    if ( $ref =~ /=HASH\(([0-9a-z]+)\)/ ) {
-        $addr = $1;
-    }
-    else {
-        die "$ref";
-    }
-
-    my $gobject = $self->graphic_manager->graphic_object( $addr );
-    die "could not find heap object at $addr" if !defined $gobject;
+    my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
+    die "could not find heap object in graphic manager" if !defined $gobject;
 
     $gobject->set_position( 10, 10 );
     $self->add_objects( $gobject );
@@ -149,12 +129,14 @@ sub run {
             $self->invalidate_rect( 0, 0, 500, 500 );
             $self->needs_draw( 0 );
         }
-        while ( Gtk2->events_pending() ) {
-            Gtk2->main_iteration();
-        }
+
         $self->runtime_iteration();
         my $needs_draw = $self->graphic_manager->process_pending_messages();
         $self->needs_draw( $needs_draw );
+
+        while ( Gtk2->events_pending() ) {
+            Gtk2->main_iteration();
+        }
     }
 }
 
@@ -196,6 +178,21 @@ sub handle_keypress {
     #$server->handle_keypress( $keyval ) if $keyval;
 
     return 1;
+}
+
+sub selected_heap {
+    my ( $self, $sheap ) = @_;
+    if ( defined $sheap ) {
+        my $heapref = $self->runtime->heap();
+        my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
+        my $current = $self->{selected_heap};
+        if ( defined $current && $current != $sheap ) {
+            $gobject->toggle_highlight_heap_element( $current, 0 );
+        }
+        $gobject->toggle_highlight_heap_element( $sheap, 1 );
+        $self->{selected_heap} = $sheap;
+    }
+    return $self->{selected_heap};
 }
 
 sub arrow_keypress {
@@ -240,7 +237,6 @@ sub arrow_keypress {
 
     if ( $handler->{$arrow} ) {
         $handler->{$arrow}->();
-print STDERR $self->selected_heap() . "\n";
     }
 }
 

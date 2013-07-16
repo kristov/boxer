@@ -14,6 +14,11 @@ sub BUILD {
     $self->outer_box->fill( 1 );
 }
 
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
+}
+
 sub get_geometry {
     my ( $self ) = @_;
 

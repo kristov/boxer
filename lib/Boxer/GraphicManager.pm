@@ -84,6 +84,24 @@ sub _graphic_class_from_object {
     return $gclass;
 }
 
+sub graphic_object_from_object {
+    my ( $self, $object ) = @_;
+    return $self->graphic_object( $self->id_from_object( $object ) );
+}
+
+sub id_from_object {
+    my ( $self, $object ) = @_;
+    my $ref = "$object";
+    my $addr;
+    if ( $ref =~ /=HASH\(([0-9a-z]+)\)/ ) {
+        $addr = $1;
+    }
+    else {
+        die "Could not recognize ref: $ref";
+    }
+    return $addr;
+}
+
 sub graphic_object {
     my ( $self, $id ) = @_;
     if ( exists $self->{OBJECT}->{$id} ) {

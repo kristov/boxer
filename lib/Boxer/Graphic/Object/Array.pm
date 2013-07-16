@@ -5,7 +5,19 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 
+has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 has orientation => ( isa => 'Str', is => 'rw', default => 'horizontal' );
+
+sub BUILD {
+    my ( $self ) = @_;
+    $self->outer_box( Boxer::Graphic::Widget::Box->new() );
+    $self->outer_box->fill( 1 );
+}
+
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
+}
 
 sub push {
     my ( $self, $item ) = @_;
@@ -73,8 +85,7 @@ sub draw {
     my $nr_items = scalar( @{ $array } );
 
     if ( $orientation eq 'horizontal' ) {
-        my $box = Boxer::Graphic::Widget::Box->new();
-        $box->fill( 1 );
+        my $box = $self->outer_box();
         $box->set_position( $x, $y );
         $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
         $box->color( [ 0.6, 0.6, 0.1 ] );
@@ -92,8 +103,7 @@ sub draw {
     }
     elsif ( $orientation eq 'vertical' ) {
         my ( $width, $height ) = $self->get_geometry();
-        my $box = Boxer::Graphic::Widget::Box->new();
-        $box->fill( 1 );
+        my $box = $self->outer_box();
         $box->set_position( $x, $y );
         $box->set_geometry( $width, $height );
         $box->color( [ 1.0, 0.4, 0.0 ] );

@@ -2,16 +2,21 @@ package Boxer::Graphic::Object::Number;
 
 use Moose;
 with 'Boxer::Graphic';
-has 'box' => ( 'isa' => 'Boxer::Graphic::Widget::Box', 'is' => 'rw' );
+has 'outer_box' => ( 'isa' => 'Boxer::Graphic::Widget::Box', 'is' => 'rw' );
 has 'value' => ( isa => 'Int', is => 'rw' );
 
 use Boxer::Graphic::Widget::Box;
 
 sub BUILD {
     my ( $self ) = @_;
-    $self->box( Boxer::Graphic::Widget::Box->new() );
-    $self->box->fill( 1 );
-    $self->box->color( [ 0.0, 0.6, 0.0 ] );
+    $self->outer_box( Boxer::Graphic::Widget::Box->new() );
+    $self->outer_box->fill( 1 );
+    $self->outer_box->color( [ 0.0, 0.6, 0.0 ] );
+}
+
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
 }
 
 sub get_geometry {
@@ -29,10 +34,10 @@ sub draw {
 
     my ( $x, $y ) = $self->get_position();
 
-    my $box = $self->box();
-    $box->set_position( $x, $y );
-    $self->box->set_geometry( $SIZEUNIT, $SIZEUNIT );
-    $box->draw( $cr );
+    my $outer_box = $self->outer_box();
+    $outer_box->set_position( $x, $y );
+    $outer_box->set_geometry( $SIZEUNIT, $SIZEUNIT );
+    $outer_box->draw( $cr );
 
     my $value = $self->value();
     if ( $value ) {

@@ -41,6 +41,15 @@ sub get_geometry {
     return ( $max_width + ( $PADDING * 2 ), $height );
 }
 
+sub toggle_highlight_heap_element {
+    my ( $self, $index, $highlight ) = @_;
+    my $array = $self->{array};
+    my $item = $array->[$index];
+    if ( defined $item ) {
+        $item->highlight( $highlight );
+    }
+}
+
 sub draw {
     my ( $self, $cr ) = @_;
 

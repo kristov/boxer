@@ -12,6 +12,7 @@ has 'x'             => ( isa => 'Int', is => 'rw', default => 1 );
 has 'y'             => ( isa => 'Int', is => 'rw', default => 1 );
 has 'color'         => ( isa => 'ArrayRef', is => 'rw', default => sub { [ 0.2, 0.2, 0.9 ] } );
 has 'fill'          => ( isa => 'Int', is => 'rw' );
+has 'highlighted'   => ( isa => 'Int', is => 'rw', default => 0 );
 
 sub set_geometry {
     my ( $self, $width, $height ) = @_;
@@ -26,6 +27,16 @@ sub get_geometry {
 
 sub draw {
     my ( $self, $cr ) = @_;
+    my $color  = $self->color();
+    my $fill = $self->fill();
+    $self->_draw( $fill, $color, $cr );
+    if ( $self->highlighted() ) {
+        $self->_draw( 0, [ 1.0, 0.9, 0.0 ], $cr );
+    }
+}
+
+sub _draw {
+    my ( $self, $fill, $color, $cr ) = @_;
 
     $cr->save();
 
@@ -34,7 +45,6 @@ sub draw {
     my $radius = $self->corner_radius();
     my $x      = $self->x();
     my $y      = $self->y();
-    my $color  = $self->color();
 
     $cr->set_line_width( 5 );
 
@@ -44,8 +54,8 @@ sub draw {
     $cr->arc( $x + $radius, $y + $height - $radius, $radius, M_PI * .5, M_PI );
     $cr->arc( $x + $radius, $y + $radius, $radius, M_PI, M_PI * 1.5 );
     $cr->set_source_rgb( @{ $color } );
-    $cr->stroke() if !$self->fill();
-    $cr->fill() if $self->fill();
+    $cr->stroke() if !$fill;
+    $cr->fill() if $fill;
 
     $cr->restore();
 }

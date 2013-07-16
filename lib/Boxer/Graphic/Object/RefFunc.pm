@@ -13,6 +13,11 @@ sub BUILD {
     $self->outer_box->fill( 1 );
 }
 
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
+}
+
 sub get_geometry {
     my ( $self ) = @_;
 
@@ -41,6 +46,7 @@ sub draw {
 
     $outer_box->set_position( $x, $y );
     $outer_box->set_geometry( $self->get_geometry() );
+    $outer_box->highlighted( $self->highlighted() );
     $outer_box->draw( $cr );
 
     $cr->restore();

@@ -13,6 +13,13 @@ use constant KEYWIDTH  => 100;
 sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
+    $self->outer_box->fill( 1 );
+    $self->outer_box->color( [ 0.6, 0.8, 0.1 ] );
+}
+
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self->outer_box();
 }
 
 sub geometry {
@@ -47,12 +54,14 @@ sub draw {
     my $startx = $x;
     my $starty = $y;
 
+    my $outer_box = $self->outer_box();
+    $outer_box->set_position( $startx, $starty );
+    $outer_box->set_geometry( $width, $height );
+    $outer_box->draw( $cr );
+
     my $box = Boxer::Graphic::Widget::Box->new();
-    $box->fill( 1 );
-    $box->color( [ 0.6, 0.8, 0.1 ] );
     $box->set_position( $startx, $starty );
     $box->set_geometry( $width, $height );
-    $box->draw( $cr );
 
     $startx += PADDING;
     $starty += PADDING;

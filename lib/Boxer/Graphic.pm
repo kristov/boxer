@@ -5,6 +5,7 @@ use Moose::Role;
 has 'graphic_manager' => ( isa => 'Boxer::GraphicManager', is => 'rw' );
 has 'x' => ( isa => 'Int', is => 'rw' );
 has 'y' => ( isa => 'Int', is => 'rw' );
+has 'highlighted' => ( isa => 'Int', is => 'rw', default => 0 );
 has 'PADDING' => ( isa => 'Int', is => 'rw', default => 5 );
 has 'SIZEUNIT' => ( isa => 'Int', is => 'rw', default => 20 );
 
@@ -17,6 +18,17 @@ sub set_position {
     my ( $self, $x, $y ) = @_;
     $self->x( $x );
     $self->y( $y );
+}
+
+sub highlight {
+    my ( $self, $highlight ) = @_;
+    my $thing = $self->thing_to_highlight();
+    if ( defined $thing ) {
+        $thing->highlighted( $highlight );
+    }
+    else {
+        die "I dont have a thing_to_highlight!";
+    }
 }
 
 sub dispatch {
