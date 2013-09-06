@@ -48,6 +48,9 @@ sub toggle_highlight_heap_element {
     if ( defined $item ) {
         $item->highlight( $highlight );
     }
+    else {
+        die "item is not defined\n";
+    }
 }
 
 sub draw {

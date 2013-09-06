@@ -46,7 +46,6 @@ sub draw {
 
     $outer_box->set_position( $x, $y );
     $outer_box->set_geometry( $self->get_geometry() );
-    $outer_box->highlighted( $self->highlighted() );
     $outer_box->draw( $cr );
 
     $cr->restore();

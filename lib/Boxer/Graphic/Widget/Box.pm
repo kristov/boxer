@@ -12,7 +12,6 @@ has 'x'             => ( isa => 'Int', is => 'rw', default => 1 );
 has 'y'             => ( isa => 'Int', is => 'rw', default => 1 );
 has 'color'         => ( isa => 'ArrayRef', is => 'rw', default => sub { [ 0.2, 0.2, 0.9 ] } );
 has 'fill'          => ( isa => 'Int', is => 'rw' );
-has 'highlighted'   => ( isa => 'Int', is => 'rw', default => 0 );
 
 sub set_geometry {
     my ( $self, $width, $height ) = @_;

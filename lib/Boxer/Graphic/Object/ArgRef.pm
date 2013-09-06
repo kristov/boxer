@@ -40,7 +40,6 @@ sub draw {
     $box->set_position( $x, $y );
     $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
     $box->color( [ 0.1, 0.6, 0.6 ] );
-    $box->highlighted( $self->highlighted() );
     $box->draw( $cr );
 
     $cr->restore();
