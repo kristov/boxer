@@ -7,46 +7,121 @@ use Gtk2 qw/-init/;
 use Glib qw/TRUE FALSE/;
 
 use Boxer::GraphicManager;
+use Boxer::Screen::Interface::Window;
 
-has 'win'     => ( 'isa' => 'Gtk2::Window', 'is' => 'rw' );
-has 'da'      => ( 'isa' => 'Gtk2::DrawingArea', 'is' => 'rw' );
-has 'surface' => ( 'isa' => 'Cairo::ImageSurface', 'is' => 'rw' );
-has 'objects' => ( 'isa' => 'ArrayRef', 'is' => 'rw' );
-has 'runtime' => ( 'isa' => 'Ref', 'is' => 'rw' );
-has 'needs_draw' => ( 'isa' => 'Int', 'is' => 'rw' );
-has 'graphic_started' => ( 'isa' => 'Int', 'is' => 'rw' );
-has 'graphic_manager' => ( 'isa' => 'Boxer::GraphicManager', 'is' => 'rw' );
+has 'win' => (
+    is  => 'rw',
+    isa => 'Gtk2::Window',
+    documentation => "GTK window",
+);
+
+has 'da' => (
+    is  => 'rw',
+    isa => 'Gtk2::DrawingArea',
+    documentation => "GTK drawing area",
+);
+
+has 'vbox' => (
+    is  => 'rw',
+    isa => 'Gtk2::VBox',
+    documentation => "Where to add the drawing area",
+);
+
+has 'surface' => (
+    is  => 'rw',
+    isa => 'Cairo::ImageSurface',
+    documentation => "Cairo surface we are drawing to",
+);
+
+has 'runtime' => (
+    is  => 'rw',
+    isa => 'Ref',
+    documentation => "The module executing the code",
+);
+
+has 'w' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "Window width",
+);
+
+has 'h' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "Window height",
+);
+
+has 'needs_draw' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "Do we need to redraw the screen?",
+);
+
+has 'graphic_started' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "Has the graphical environment been initialized yet?",
+);
+
+has 'interface_window' => (
+    is  => 'rw',
+    isa => 'Boxer::Screen::Interface::Window',
+    documentation => "The main user interface",
+);
+
+has 'graphic_manager' => (
+    is  => 'rw',
+    isa => 'Boxer::GraphicManager',
+    documentation => "This coordinating messages between code and graphics",
+);
 
 sub BUILD {
     my ( $self ) = @_;
 
-    $self->objects( [] );
     $self->graphic_manager( Boxer::GraphicManager->new() );
+
+    $self->interface_window( Boxer::Screen::Interface::Window->new() );
+    $self->interface_window->screen( $self );
+    $self->interface_window->set_position( 0, 0 );
 
     $self->needs_draw( 1 );
 
+    my ( $width, $height ) = $self->get_geometry();
+
     # The graphical environment
     $self->win( Gtk2::Window->new( 'toplevel' ) );
-    $self->da( Gtk2::DrawingArea->new );
-    $self->da->size( 500, 500 );
+    $self->win->set_default_size( $width, $height );
     $self->win()->signal_connect( key_press_event => sub { $self->handle_keypress( @_ ) } );
 
-    my $vbox = Gtk2::VBox->new( 0, 5 );
-    $vbox->pack_start( $self->da(), 0, 0, 0 );
+    $self->vbox( Gtk2::VBox->new( 0, 5 ) );
 
-    $self->win->set_default_size( 500, 500 );
-    $self->win->add( $vbox );
-
+    $self->da( Gtk2::DrawingArea->new );
+    $self->da->size( $width, $height );
     $self->da->signal_connect( expose_event => sub { $self->render( @_ ) } );
+    $self->vbox->pack_start( $self->da, 0, 0, 0 );
+    
+    $self->win->add( $self->vbox );
 
     $self->win->signal_connect( delete_event => sub { exit; } );
 
     $self->win->show_all;
 }
 
+sub set_geometry {
+    my ( $self, $w, $h ) = @_;
+    $self->w( $w );
+    $self->h( $h );
+}
+
+sub get_geometry {
+    my ( $self ) = @_;
+    return ( $self->w, $self->h );
+}
+
 sub create_surface {
     my ( $self ) = @_;
-    my $surface = Cairo::ImageSurface->create( 'argb32', 500, 500 );
+    my ( $width, $height ) = $self->get_geometry();
+    my $surface = Cairo::ImageSurface->create( 'argb32', $width, $height );
     $self->surface( $surface );
 }
 
@@ -67,17 +142,8 @@ sub do_cairo_drawing {
 #    $cr->show_text( "Disziplin ist Macht." );
 #    my $rgb2 = [ 0.8, 0.4, 0 ];
 
-    my $list = $self->objects();
-    for my $gobject ( @{ $list } ) {
-        $gobject->draw( $cr );
-    }
+    $self->interface_window->draw( $cr );
     $self->needs_draw( 0 );
-}
-
-sub add_objects {
-    my ( $self, @objects ) = @_;
-    my $list = $self->objects();
-    push @{ $list }, $_ for @objects;
 }
 
 sub render {
@@ -88,38 +154,21 @@ sub render {
     return FALSE;
 }
 
-sub add_main_ref {
+sub heap_object {
     my ( $self ) = @_;
-
-    my $mainref = $self->runtime->main();
-    my $gobject = $self->graphic_manager->graphic_object_from_object( $mainref );
-    die "could not find main object in graphic manager" if !defined $gobject;
-
-    $gobject->set_position( 10, 10 );
-    $self->add_objects( $gobject );
-}
-
-sub add_heap {
-    my ( $self ) = @_;
-
-    my $heapref = $self->runtime->heap();
-    my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
-    die "could not find heap object in graphic manager" if !defined $gobject;
-
-    $gobject->set_position( 10, 10 );
-    $self->add_objects( $gobject );
+    my $heap = $self->runtime->heap();
+    my $gobject = $self->graphic_manager->graphic_object_from_object( $heap );
+    return $gobject;
 }
 
 sub run {
     my ( $self ) = @_;
 
     $self->create_surface();
-    $self->do_cairo_drawing();
+    $self->interface_window->set_position( 10, 10 );
 
     $self->graphic_manager->process_pending_messages();
-
-    #$self->add_main_ref();
-    $self->add_heap();
+    $self->do_cairo_drawing();
 
     $self->needs_draw( 1 );
 
@@ -161,15 +210,26 @@ sub handle_keypress {
 
     my $keyval = $event->keyval();
 
+    my $directional = {
+        'up',
+        'down',
+        'left',
+        'right',
+    };
+
     my $code2key = {
         65362 => 'up',
         65364 => 'down',
         65361 => 'left',
         65363 => 'right',
+        65293 => 'enter',
     };
 
+    my $heapref = $self->runtime->heap();
+    my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
+
     if ( $code2key->{$keyval} ) {
-        $self->arrow_keypress( $code2key->{$keyval} );
+        $gobject->dispatch_keypress( $code2key->{$keyval} );
     }
 
     $self->needs_draw( 1 );
@@ -178,66 +238,6 @@ sub handle_keypress {
     #$server->handle_keypress( $keyval ) if $keyval;
 
     return 1;
-}
-
-sub selected_heap {
-    my ( $self, $sheap ) = @_;
-    if ( defined $sheap ) {
-        my $heapref = $self->runtime->heap();
-        my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
-        my $current = $self->{selected_heap};
-        if ( defined $current && $current != $sheap ) {
-            $gobject->toggle_highlight_heap_element( $current, 0 );
-        }
-        $gobject->toggle_highlight_heap_element( $sheap, 1 );
-        $self->{selected_heap} = $sheap;
-    }
-    return $self->{selected_heap};
-}
-
-sub arrow_keypress {
-    my ( $self, $arrow ) = @_;
-
-    my $index = $self->selected_heap();
-    if ( !defined $index ) {
-        $index = 0;
-        $self->selected_heap( $index );
-    }
-
-    my $handler = {
-        up => sub {
-            my $heapref = $self->runtime->heap();
-            my $length = $heapref->length();
-            return if $length == 0;
-            my $index = $self->selected_heap();
-            if ( $index == 0 ) {
-                $index = $length - 1;
-                $self->selected_heap( $index );
-            }
-            else {
-                $index--;
-                $self->selected_heap( $index );
-            }
-        },
-        down => sub {
-            my $heapref = $self->runtime->heap();
-            my $length = $heapref->length();
-            return if $length == 0;
-            my $index = $self->selected_heap();
-            if ( $index >= ( $length - 1 ) ) {
-                $index = 0;
-                $self->selected_heap( $index );
-            }
-            else {
-                $index++;
-                $self->selected_heap( $index );
-            }
-        },
-    };
-
-    if ( $handler->{$arrow} ) {
-        $handler->{$arrow}->();
-    }
 }
 
 1;

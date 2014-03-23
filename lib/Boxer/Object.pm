@@ -2,7 +2,11 @@ package Boxer::Object;
 
 use Moose::Role;
 
-has 'runtime' => ( isa => 'Boxer::RunTime', 'is' => 'rw' );
+has 'runtime' => (
+    is  => 'rw',
+    isa => 'Boxer::RunTime',
+    documentation => "The runtime this object belongs to",
+);
 
 sub new {
     my ( $class, $runtime ) = @_;

@@ -4,6 +4,22 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
+with 'Boxer::Screen::Interface::ListLike';
+
+sub hooks {
+    my ( $self ) = @_;
+    return {
+        unselected => sub { $self->highlight_element( $_[0], 0 ) },
+        selected   => sub { $self->highlight_element( $_[0], 1 ) },
+        enter      => sub { $self->enter_on_item( $_[0] ) },
+    };
+}
+
+sub length {
+    my ( $self ) = @_;
+    $self->{array} ||= [];
+    return scalar( @{ $self->{array} } );
+}
 
 sub push {
     my ( $self, $item ) = @_;
@@ -41,7 +57,7 @@ sub get_geometry {
     return ( $max_width + ( $PADDING * 2 ), $height );
 }
 
-sub toggle_highlight_heap_element {
+sub highlight_element {
     my ( $self, $index, $highlight ) = @_;
     my $array = $self->{array};
     my $item = $array->[$index];
@@ -51,6 +67,13 @@ sub toggle_highlight_heap_element {
     else {
         die "item is not defined\n";
     }
+}
+
+sub enter_on_item {
+    my ( $self, $index ) = @_;
+    my $array = $self->{array};
+    my $item = $array->[$index];
+    $self->graphic_manager->select_item( $item );
 }
 
 sub draw {

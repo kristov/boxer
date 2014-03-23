@@ -2,12 +2,44 @@ package Boxer::Graphic;
 
 use Moose::Role;
 
-has 'graphic_manager' => ( isa => 'Boxer::GraphicManager', is => 'rw' );
-has 'x' => ( isa => 'Int', is => 'rw' );
-has 'y' => ( isa => 'Int', is => 'rw' );
-has 'highlighted' => ( isa => 'Int', is => 'rw', default => 0 );
-has 'PADDING' => ( isa => 'Int', is => 'rw', default => 5 );
-has 'SIZEUNIT' => ( isa => 'Int', is => 'rw', default => 20 );
+has 'graphic_manager' => (
+    is  => 'rw',
+    isa => 'Boxer::GraphicManager',
+    documentation => "The manager of graphic objects",
+);
+
+has 'x' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "The x position of this element within its parent",
+);
+
+has 'y' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "The y position of this element within its parent",
+);
+
+has 'highlighted' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 0,
+    documentation => "If set to 1, the element is highlighted in some way",
+);
+
+has 'PADDING' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 5,
+    documentation => "How much padding should be used for child elements",
+);
+
+has 'SIZEUNIT' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 20,
+    documentation => "How large should the element be rendered",
+);
 
 sub get_position {
     my ( $self ) = @_;
@@ -28,6 +60,17 @@ sub highlight {
     }
     else {
         die "I dont have a thing_to_highlight!";
+    }
+}
+
+sub dispatch_keypress {
+    my ( $self, $key ) = @_;
+
+    next if !$self->can( 'keys' );
+
+    my $keys = $self->keys();
+    if ( defined $keys->{$key} ) {
+        $keys->{$key}->();
     }
 }
 
