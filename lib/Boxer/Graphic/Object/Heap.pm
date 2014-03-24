@@ -63,6 +63,10 @@ sub highlight_element {
     my $item = $array->[$index];
     if ( defined $item ) {
         $item->highlight( $highlight );
+        if ( $highlight ) {
+            my $ref = "$item";
+            $self->graphic_manager->screen->interface->set_message( $ref );
+        }
     }
     else {
         die "item is not defined\n";
@@ -73,7 +77,7 @@ sub enter_on_item {
     my ( $self, $index ) = @_;
     my $array = $self->{array};
     my $item = $array->[$index];
-    $self->graphic_manager->select_item( $item );
+    $self->graphic_manager->screen->interface->set_context( $item );
 }
 
 sub draw {

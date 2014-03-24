@@ -2,6 +2,12 @@ package Boxer::GraphicManager;
 
 use Moose;
 
+has 'screen' => (
+    is  => 'rw',
+    isa => 'Boxer::Screen',
+    documentation => "Screen to notify of updates",
+);
+
 my %SUPPORTED = qw(
     new    1
     calls  1

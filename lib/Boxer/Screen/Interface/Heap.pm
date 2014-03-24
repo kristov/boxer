@@ -16,7 +16,7 @@ sub draw {
 
     $cr->save();
 
-    my $heap = $self->window->screen->heap_object();
+    my $heap = $self->window->screen->heap();
 
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING = $self->PADDING();

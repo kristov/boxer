@@ -2,8 +2,17 @@ package Boxer::Graphic::Object::Number;
 
 use Moose;
 with 'Boxer::Graphic';
-has 'outer_box' => ( 'isa' => 'Boxer::Graphic::Widget::Box', 'is' => 'rw' );
-has 'value' => ( isa => 'Int', is => 'rw' );
+
+has 'outer_box' => (
+    is  => 'rw',
+    isa => 'Boxer::Graphic::Widget::Box',
+);
+
+has 'value' => (
+    is  => 'rw',
+    isa => 'Int',
+    documentation => "The value of this constant",
+);
 
 use Boxer::Graphic::Widget::Box;
 

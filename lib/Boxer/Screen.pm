@@ -63,7 +63,7 @@ has 'graphic_started' => (
     documentation => "Has the graphical environment been initialized yet?",
 );
 
-has 'interface_window' => (
+has 'interface' => (
     is  => 'rw',
     isa => 'Boxer::Screen::Interface::Window',
     documentation => "The main user interface",
@@ -79,10 +79,11 @@ sub BUILD {
     my ( $self ) = @_;
 
     $self->graphic_manager( Boxer::GraphicManager->new() );
+    $self->graphic_manager->screen( $self );
 
-    $self->interface_window( Boxer::Screen::Interface::Window->new() );
-    $self->interface_window->screen( $self );
-    $self->interface_window->set_position( 0, 0 );
+    $self->interface( Boxer::Screen::Interface::Window->new() );
+    $self->interface->screen( $self );
+    $self->interface->set_position( 0, 0 );
 
     $self->needs_draw( 1 );
 
@@ -142,7 +143,7 @@ sub do_cairo_drawing {
 #    $cr->show_text( "Disziplin ist Macht." );
 #    my $rgb2 = [ 0.8, 0.4, 0 ];
 
-    $self->interface_window->draw( $cr );
+    $self->interface->draw( $cr );
     $self->needs_draw( 0 );
 }
 
@@ -154,10 +155,17 @@ sub render {
     return FALSE;
 }
 
-sub heap_object {
+sub heap {
     my ( $self ) = @_;
     my $heap = $self->runtime->heap();
     my $gobject = $self->graphic_manager->graphic_object_from_object( $heap );
+    return $gobject;
+}
+
+sub main {
+    my ( $self ) = @_;
+    my $main = $self->runtime->main();
+    my $gobject = $self->graphic_manager->graphic_object_from_object( $main );
     return $gobject;
 }
 
@@ -165,28 +173,36 @@ sub run {
     my ( $self ) = @_;
 
     $self->create_surface();
-    $self->interface_window->set_position( 10, 10 );
+    $self->interface->set_position( 10, 10 );
 
     $self->graphic_manager->process_pending_messages();
     $self->do_cairo_drawing();
 
+    #Glib::Timeout->add( 10, sub { $self->process_timer } );
     $self->needs_draw( 1 );
+    $self->process;
 
-    while ( 1 ) {
-        if ( $self->needs_draw() ) {
-            $self->do_cairo_drawing();
-            $self->invalidate_rect( 0, 0, 500, 500 );
-            $self->needs_draw( 0 );
-        }
+    Gtk2->main();
+}
 
-        $self->runtime_iteration();
-        my $needs_draw = $self->graphic_manager->process_pending_messages();
-        $self->needs_draw( $needs_draw );
+sub process_timer {
+    my ( $self ) = @_;
+    $self->process;
+}
 
-        while ( Gtk2->events_pending() ) {
-            Gtk2->main_iteration();
-        }
+sub process {
+    my ( $self ) = @_;
+
+    if ( $self->needs_draw ) {
+        $self->do_cairo_drawing();
+        my ( $width, $height ) = $self->get_geometry();
+        $self->invalidate_rect( 0, 0, $width, $height );
+        $self->needs_draw( 0 );
     }
+
+    $self->runtime_iteration();
+    my $needs_draw = $self->graphic_manager->process_pending_messages();
+    $self->needs_draw( $needs_draw );
 }
 
 sub runtime_iteration {
@@ -231,11 +247,9 @@ sub handle_keypress {
     if ( $code2key->{$keyval} ) {
         $gobject->dispatch_keypress( $code2key->{$keyval} );
     }
-
     $self->needs_draw( 1 );
 
-    #my $server = $self->server();
-    #$server->handle_keypress( $keyval ) if $keyval;
+    $self->process;
 
     return 1;
 }

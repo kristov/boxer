@@ -12,7 +12,8 @@ use Boxer::RunTime;
 use Boxer::Screen;
 
 my $runtime = Boxer::RunTime->new();
-my $screen  = Boxer::Screen->new( { w => 1366, h => 713 } );
+#my $screen  = Boxer::Screen->new( { w => 1366, h => 713 } );
+my $screen  = Boxer::Screen->new( { w => 800, h => 600 } );
 
 # So messages can be sent to the screen
 $runtime->screen( $screen );
