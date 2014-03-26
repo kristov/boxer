@@ -5,9 +5,20 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 
-has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has 'calls' => ( 'isa' => 'Ref', 'is' => 'rw' );
-has 'args' => ( 'isa' => 'Boxer::Graphic::Object::Array', 'is' => 'rw' );
+has 'outer_box' => (
+    is  => 'rw',
+    isa => 'Boxer::Graphic::Widget::Box',
+);
+
+has 'calls' => (
+    is  => 'rw',
+    isa => 'Ref',
+);
+
+has 'args' => (
+    is  => 'rw',
+    isa => 'Boxer::Graphic::Object::Array',
+);
 
 sub BUILD {
     my ( $self ) = @_;

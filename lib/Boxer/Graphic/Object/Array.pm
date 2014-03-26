@@ -5,8 +5,17 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 
-has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has orientation => ( isa => 'Str', is => 'rw', default => 'horizontal' );
+has 'outer_box' => (
+    is  => 'rw',
+    isa => 'Boxer::Graphic::Widget::Box',
+);
+
+has orientation => (
+    is  => 'rw',
+    isa => 'Str',
+    default => 'horizontal',
+    documentation => "Render this array horizontal or vertical",
+);
 
 sub BUILD {
     my ( $self ) = @_;

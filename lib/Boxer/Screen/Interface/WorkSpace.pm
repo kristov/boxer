@@ -17,6 +17,44 @@ has 'context' => (
     documentation => "Thing being viewed",
 );
 
+sub keys {
+    my ( $self ) = @_;
+    return {
+        up    => sub { $self->descend() },
+        down  => sub { $self->ascend() },
+        left  => sub { $self->backout() },
+        right => sub { $self->gointo() },
+    };
+}
+
+sub descend {
+    my ( $self ) = @_;
+    my $context = $self->context();
+    if ( $context ) {
+    }
+}
+
+sub ascend {
+    my ( $self ) = @_;
+    my $context = $self->context();
+    if ( $context ) {
+    }
+}
+
+sub backout {
+    my ( $self ) = @_;
+    my $context = $self->context();
+    if ( $context ) {
+    }
+}
+
+sub gointo {
+    my ( $self ) = @_;
+    my $context = $self->context();
+    if ( $context ) {
+    }
+}
+
 sub draw {
     my ( $self, $cr ) = @_;
 

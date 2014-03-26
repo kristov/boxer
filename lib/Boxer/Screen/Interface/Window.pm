@@ -63,6 +63,7 @@ sub BUILD {
     $message->window( $self );
     $self->message( $message );
 
+    $heap->highlight( 1 );
     $self->context( $heap );
 }
 
