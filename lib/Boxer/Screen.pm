@@ -155,6 +155,11 @@ sub render {
     return FALSE;
 }
 
+sub clipboard {
+    my ( $self ) = @_;
+    return $self->{clipboard};
+}
+
 sub heap {
     my ( $self ) = @_;
     my $heap = $self->runtime->heap();
@@ -226,6 +231,7 @@ sub handle_keypress {
 
     my $keyval = $event->keyval();
 
+print "$keyval\n";
     my $directional = {
         'up',
         'down',
@@ -239,16 +245,24 @@ sub handle_keypress {
         65361 => 'left',
         65363 => 'right',
         65293 => 'enter',
+        65289 => 'tab',
     };
 
-    my $heapref = $self->runtime->heap();
-    my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
+    if ( $code2key->{$keyval} && $code2key->{$keyval} eq 'tab' ) {
+        $self->interface->tab_pressed();
+        $self->needs_draw( 1 );
+        $self->process;
+        return 1;
+    }
+
+    my $gobject = $self->interface->context();
+    #my $heapref = $self->runtime->heap();
+    #my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
 
     if ( $code2key->{$keyval} ) {
         $gobject->dispatch_keypress( $code2key->{$keyval} );
     }
     $self->needs_draw( 1 );
-
     $self->process;
 
     return 1;

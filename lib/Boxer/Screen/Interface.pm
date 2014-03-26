@@ -40,6 +40,19 @@ has 'SIZEUNIT' => (
     documentation => "How large should the element be rendered",
 );
 
+has 'context' => (
+    is  => 'rw',
+    isa => 'Object',
+    documentation => "What is selected in the interface element",
+);
+
+has 'highlighted' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 0,
+    documentation => "If set to 1, the element is highlighted in some way",
+);
+
 sub get_position {
     my ( $self ) = @_;
     return ( $self->x(), $self->y() );
@@ -60,6 +73,33 @@ sub set_geometry {
 sub get_geometry {
     my ( $self ) = @_;
     return ( $self->w, $self->h );
+}
+
+sub thing_to_highlight {
+    my ( $self ) = @_;
+    return $self;
+}
+
+sub highlight {
+    my ( $self, $highlight ) = @_;
+    my $thing = $self->thing_to_highlight();
+    if ( defined $thing ) {
+        $thing->highlighted( $highlight );
+    }
+    else {
+        die "I dont have a thing_to_highlight!";
+    }
+}
+
+sub dispatch_keypress {
+    my ( $self, $key ) = @_;
+
+    return if !$self->can( 'keys' );
+
+    my $keys = $self->keys();
+    if ( defined $keys->{$key} ) {
+        $keys->{$key}->();
+    }
 }
 
 1;

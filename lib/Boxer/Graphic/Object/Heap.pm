@@ -4,16 +4,6 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
-with 'Boxer::Screen::Interface::ListLike';
-
-sub hooks {
-    my ( $self ) = @_;
-    return {
-        unselected => sub { $self->highlight_element( $_[0], 0 ) },
-        selected   => sub { $self->highlight_element( $_[0], 1 ) },
-        enter      => sub { $self->enter_on_item( $_[0] ) },
-    };
-}
 
 sub length {
     my ( $self ) = @_;

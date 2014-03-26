@@ -1,4 +1,4 @@
-package Boxer::Screen::Interface::WorkSpace;
+package Boxer::Screen::Interface::Clipboard;
 
 use Moose;
 use Boxer::Graphic::Widget::Box;
@@ -11,10 +11,10 @@ has 'window' => (
     documentation => "The window this heap interface is connected to",
 );
 
-has 'context' => (
+has 'clipboard' => (
     is  => 'rw',
-    isa => 'Boxer::Graphic',
-    documentation => "Thing being viewed",
+    isa => 'Object',
+    documentation => "The thing in the clipboard",
 );
 
 sub draw {
@@ -22,7 +22,7 @@ sub draw {
 
     $cr->save();
 
-    my $context = $self->context();
+    my $clipboard = $self->clipboard();
 
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING = $self->PADDING();
@@ -30,20 +30,16 @@ sub draw {
     my ( $x, $y ) = $self->get_position();
     my ( $width, $height ) = $self->get_geometry();
 
-    my $color = $self->highlighted
-        ? [ 0.5, 0.5, 0.5 ]
-        : [ 0.3, 0.3, 0.3 ];
-
     my $box = Boxer::Graphic::Widget::Box->new();
     $box->fill( 1 );
     $box->set_position( $x, $y );
     $box->set_geometry( $width, $height );
-    $box->color( $color );
+    $box->color( [ 0.3, 0.3, 0.3 ] );
     $box->draw( $cr );
 
-    if ( $context ) {
-        $context->set_position( $x + $PADDING, $y + $PADDING );
-        $context->draw( $cr );
+    if ( $clipboard ) {
+        $clipboard->set_position( $x + $PADDING, $y + $PADDING );
+        $clipboard->draw( $cr );
     }
 
     $cr->restore();
