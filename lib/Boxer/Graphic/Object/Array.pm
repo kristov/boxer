@@ -17,6 +17,11 @@ has orientation => (
     documentation => "Render this array horizontal or vertical",
 );
 
+sub next {
+    my ( $self ) = @_;
+    return $self->{array}->[0];
+}
+
 sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
@@ -31,6 +36,7 @@ sub thing_to_highlight {
 sub push {
     my ( $self, $item ) = @_;
     $self->{array} ||= [];
+    $item->parent( $self );
     push @{ $self->{array} }, $item;
 }
 

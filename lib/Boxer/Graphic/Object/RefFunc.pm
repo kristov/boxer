@@ -4,8 +4,22 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
+
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has 'refs'      => ( isa => 'Ref', is => 'rw' );
+
+sub refs {
+    my ( $self, $gobject ) = @_;
+    if ( defined $gobject ) {
+        $self->{refs} = $gobject;
+        $gobject->parent( $self );
+    }
+    return $self->{refs};
+}
+
+sub next {
+    my ( $self ) = @_;
+    return $self->{refs};
+}
 
 sub BUILD {
     my ( $self ) = @_;
@@ -24,14 +38,7 @@ sub get_geometry {
     my $SIZEUNIT = $self->SIZEUNIT();
 
     my $refs = $self->refs();
-    my ( $width, $height );
-
-    if ( $refs ) {
-        ( $width, $height ) = $refs->geometry();
-    }
-    else {
-        ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
-    }
+    my ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
     return ( $width, $height );
 }
 

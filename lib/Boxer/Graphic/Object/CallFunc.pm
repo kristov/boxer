@@ -10,15 +10,28 @@ has 'outer_box' => (
     isa => 'Boxer::Graphic::Widget::Box',
 );
 
-has 'calls' => (
-    is  => 'rw',
-    isa => 'Ref',
-);
+sub next {
+    my ( $self ) = @_;
+    return $self->{calls};
+}
 
-has 'args' => (
-    is  => 'rw',
-    isa => 'Boxer::Graphic::Object::Array',
-);
+sub calls {
+    my ( $self, $gobject ) = @_;
+    if ( defined $gobject ) {
+        $self->{calls} = $gobject;
+        $gobject->parent( $self );
+    }
+    return $self->{calls};
+}
+
+sub args {
+    my ( $self, $gobject ) = @_;
+    if ( defined $gobject ) {
+        $self->{args} = $gobject;
+        $gobject->parent( $self );
+    }
+    return $self->{args};
+}
 
 sub BUILD {
     my ( $self ) = @_;

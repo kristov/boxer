@@ -38,6 +38,7 @@ sub ascend {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
+        print STDERR "$context\n";
     }
 }
 
@@ -45,6 +46,12 @@ sub backout {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
+        my $parent = $context->parent();
+        if ( !$parent ) {
+            print STDERR "context $context has no parent, so it better be main()\n";
+            return;
+        }
+        $self->context( $parent );
     }
 }
 
@@ -52,6 +59,8 @@ sub gointo {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
+        my $next = $context->next();
+        $self->context( $next );
     }
 }
 

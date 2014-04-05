@@ -41,6 +41,12 @@ has 'SIZEUNIT' => (
     documentation => "How large should the element be rendered",
 );
 
+has 'parent' => (
+    is  => 'rw',
+    isa => 'Object',
+    documentation => "The logical parent of the object",
+);
+
 sub get_position {
     my ( $self ) = @_;
     return ( $self->x(), $self->y() );
@@ -88,9 +94,49 @@ sub dispatch {
         $self->$action( $gobject );
     }
     else {
-        my $selfref = "$self";
         print "Boxer::Graphic::dispatch() $self object can not $action\n";
     }
+}
+
+sub _icon_text_to_data {
+    my ( $icon_text ) = @_;
+    my $data = [];
+    $icon_text =~ s/\s//g;
+    my @pixels = split( //, $icon_text );
+    my $ptr = 0;
+    for my $y ( 0 .. 15 ) {
+        for my $x ( 0 .. 15 ) {
+            $data->[$y]->[$x] = $pixels[$ptr];
+            $ptr++;
+        }
+    }
+    return $data;
+}
+
+sub draw_icon {
+    my ( $self, $cr, $xpos, $ypos ) = @_;
+
+    $xpos += 2;
+    $ypos += 2;
+
+    my ( $color_table, $icon_text ) = @{ $self->icon };
+    my $data = _icon_text_to_data( $icon_text );
+
+    $cr->save();
+
+    for my $y ( 0 .. 15 ) {
+        for my $x ( 0 .. 15 ) {
+            my $col = $data->[$y]->[$x];
+            next if !$color_table->{$col};
+            my $color = $color_table->{$col};
+            $cr->set_source_rgb( @{ $color } );
+            $cr->rectangle( $xpos + $x, $ypos + $y, 1, 1 );
+            $cr->stroke();
+            $cr->fill();
+        }
+    }
+
+    $cr->restore();
 }
 
 1;

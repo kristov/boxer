@@ -15,6 +15,7 @@ my %SUPPORTED = qw(
     body   1
     push   1
     value  1
+    refs   1
 );
 
 sub BUILD {

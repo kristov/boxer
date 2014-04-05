@@ -5,8 +5,29 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
-has 'body' => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
-has 'args' => ( isa => 'Boxer::Graphic::Object::Array', is => 'rw' );
+
+sub body {
+    my ( $self, $gobject ) = @_;
+    if ( defined $gobject ) {
+        $self->{body} = $gobject;
+        $gobject->parent( $self );
+    }
+    return $self->{body};
+}
+
+sub args {
+    my ( $self, $gobject ) = @_;
+    if ( defined $gobject ) {
+        $self->{args} = $gobject;
+        $gobject->parent( $self );
+    }
+    return $self->{args};
+}
+
+sub next {
+    my ( $self ) = @_;
+    return $self->{body};
+}
 
 sub BUILD {
     my ( $self ) = @_;
