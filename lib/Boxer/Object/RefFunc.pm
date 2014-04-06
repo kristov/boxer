@@ -1,8 +1,11 @@
 package Boxer::Object::RefFunc;
 
 use Moose;
-with 'Boxer::Object';
+with 'Boxer::Object::LIST';
 
-sub refs { shift->PROPERTY( 'refs', @_ ) }
+sub set_refs {
+    my ( $self, $refs ) = @_;
+    $self->SET_INDEX( 0, $refs );
+}
 
 1;

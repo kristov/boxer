@@ -69,6 +69,39 @@ sub highlight {
     }
 }
 
+sub BUILD {
+    my ( $self ) = @_;
+    $self->{LIST} = [];
+}
+
+sub length {
+    my ( $self ) = @_;
+    my $array = $self->LIST();
+    return scalar( @{ $array } );
+}
+
+sub PUSH {
+    my ( $self, $value ) = @_;
+    $value->parent( $self ) if ref $value;
+    push @{ $self->{LIST} }, $value;
+}
+
+sub SET_INDEX {
+    my ( $self, $index, $value ) = @_;
+    $value->parent( $self ) if ref $value;
+    $self->{LIST}->[$index] = $value;
+}
+
+sub GET_INDEX {
+    my ( $self, $index ) = @_;
+    return $self->{LIST}->[$index];
+}
+
+sub LIST {
+    my ( $self ) = @_;
+    return $self->{LIST};
+}
+
 sub dispatch_keypress {
     my ( $self, $key ) = @_;
 
@@ -84,14 +117,18 @@ sub dispatch {
     my ( $self, $action, $parts ) = @_;
     if ( $self->can( $action ) ) {
         my $manager = $self->graphic_manager();
-        my $gobject;
-        if ( $parts->[0]->[0] =~ /CONSTANT$/ ) {
-            $gobject = $parts->[0]->[1];
+        my @args;
+        for my $part ( @{ $parts } ) {
+            my $gobject;
+            if ( $part->[0] =~ /CONSTANT$/ ) {
+                $gobject = $part->[1];
+            }
+            else {
+                $gobject = $manager->graphic_object( $part->[1] );
+            }
+            push @args, $gobject;
         }
-        else {
-            $gobject = $manager->graphic_object( $parts->[0]->[1] );
-        }
-        $self->$action( $gobject );
+        $self->$action( @args );
     }
     else {
         print "Boxer::Graphic::dispatch() $self object can not $action\n";
@@ -123,6 +160,7 @@ sub draw_icon {
     my $data = _icon_text_to_data( $icon_text );
 
     $cr->save();
+    $cr->set_line_width( 0.5 );
 
     for my $y ( 0 .. 15 ) {
         for my $x ( 0 .. 15 ) {

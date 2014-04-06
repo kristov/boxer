@@ -7,18 +7,14 @@ with 'Boxer::Graphic';
 
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 
-sub refs {
-    my ( $self, $gobject ) = @_;
-    if ( defined $gobject ) {
-        $self->{refs} = $gobject;
-        $gobject->parent( $self );
-    }
-    return $self->{refs};
+sub get_refs {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 0 );
 }
 
 sub next {
     my ( $self ) = @_;
-    return $self->{refs};
+    return $self->GET_INDEX( 0 );
 }
 
 sub BUILD {
@@ -37,7 +33,7 @@ sub get_geometry {
 
     my $SIZEUNIT = $self->SIZEUNIT();
 
-    my $refs = $self->refs();
+    my $refs = $self->get_refs();
     my ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
     return ( $width, $height );
 }
@@ -55,7 +51,34 @@ sub draw {
     $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
 
+    $self->draw_icon( $cr, $x, $y );
+
     $cr->restore();
+}
+
+sub icon {
+    return [
+        {
+            b => [ 0.3, 0.9, 0.4 ],
+        },
+        qq{
+        ................
+        ...bb......bb...
+        ...bb......bb...
+        ...bb......bb...
+        .bbbbbbbbbbbbbb.
+        .bbbbbbbbbbbbbb.
+        ...bb......bb...
+        ...bb......bb...
+        ...bb......bb...
+        ...bb......bb...
+        .bbbbbbbbbbbbbb.
+        .bbbbbbbbbbbbbb.
+        ...bb......bb...
+        ...bb......bb...
+        ...bb......bb...
+        ................
+    } ];
 }
 
 1;

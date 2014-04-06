@@ -12,25 +12,17 @@ has 'outer_box' => (
 
 sub next {
     my ( $self ) = @_;
-    return $self->{calls};
+    return $self->GET_INDEX( 0 );
 }
 
-sub calls {
-    my ( $self, $gobject ) = @_;
-    if ( defined $gobject ) {
-        $self->{calls} = $gobject;
-        $gobject->parent( $self );
-    }
-    return $self->{calls};
+sub get_calls {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 0 );
 }
 
-sub args {
-    my ( $self, $gobject ) = @_;
-    if ( defined $gobject ) {
-        $self->{args} = $gobject;
-        $gobject->parent( $self );
-    }
-    return $self->{args};
+sub get_args {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 1 );
 }
 
 sub BUILD {
@@ -54,8 +46,8 @@ sub get_geometry {
     my ( $width, $height );
     my ( $argw, $argh );
 
-    my $greffunc = $self->calls();
-    my $gargs    = $self->args();
+    my $greffunc = $self->get_calls();
+    my $gargs    = $self->get_args();
 
     if ( $greffunc ) {
         ( $width, $height ) = $greffunc->get_geometry();
@@ -84,8 +76,8 @@ sub draw {
     my ( $width, $height );
     my ( $argw, $argh );
 
-    my $greffunc = $self->calls();
-    my $gargs    = $self->args();
+    my $greffunc = $self->get_calls();
+    my $gargs    = $self->get_args();
 
     if ( $greffunc ) {
         ( $width, $height ) = $greffunc->get_geometry();

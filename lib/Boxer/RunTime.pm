@@ -5,7 +5,7 @@ use Boxer::Object::Heap;
 
 has 'screen' => ( isa => 'Ref', is => 'rw' );
 has 'heap' => ( isa => 'Boxer::Object::Heap', is => 'rw' );
-has 'main' => ( isa => 'Boxer::Object::CallFunc', is => 'rw' );
+has 'main' => ( isa => 'Boxer::Object::DefFunc', is => 'rw' );
 
 sub initialize {
     my ( $self ) = @_;
@@ -16,7 +16,7 @@ sub initialize {
 sub new_object {
     my ( $self, $object ) = @_;
     if ( my $heap = $self->heap() ) {
-        $heap->push( $object );
+        $heap->PUSH( $object );
     }
     else {
         # this should only happen from the initialize sub above when the

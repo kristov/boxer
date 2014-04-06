@@ -5,21 +5,6 @@ use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Graphic';
 
-sub length {
-    my ( $self ) = @_;
-    $self->{array} ||= [];
-    return scalar( @{ $self->{array} } );
-}
-
-sub push {
-    my ( $self, $item ) = @_;
-    $self->{array} ||= [];
-    push @{ $self->{array} }, $item;
-}
-
-sub pop {
-}
-
 sub get_geometry {
     my ( $self ) = @_;
 
@@ -27,7 +12,7 @@ sub get_geometry {
     my $PADDING = $self->PADDING();
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->{array};
+    my $array = $self->LIST();
 
     my $nr_items  = scalar( @{ $array } );
     my $nr_spaces = 0;
@@ -49,7 +34,7 @@ sub get_geometry {
 
 sub highlight_element {
     my ( $self, $index, $highlight ) = @_;
-    my $array = $self->{array};
+    my $array = $self->LIST();
     my $item = $array->[$index];
     if ( defined $item ) {
         $item->highlight( $highlight );
@@ -65,7 +50,7 @@ sub highlight_element {
 
 sub enter_on_item {
     my ( $self, $index ) = @_;
-    my $array = $self->{array};
+    my $array = $self->LIST();
     my $item = $array->[$index];
     $self->graphic_manager->screen->interface->set_context( $item );
 }
@@ -79,7 +64,7 @@ sub draw {
     my $PADDING = $self->PADDING();
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->{array};
+    my $array = $self->LIST();
 
     my $nr_items = scalar( @{ $array } );
 

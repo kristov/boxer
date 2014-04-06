@@ -1,6 +1,6 @@
 package Boxer::Object::Type::Number;
 
 use Moose;
-with 'Boxer::Object';
+with 'Boxer::Object::LIST';
 
 1;

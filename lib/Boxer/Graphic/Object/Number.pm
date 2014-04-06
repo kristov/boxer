@@ -8,12 +8,6 @@ has 'outer_box' => (
     isa => 'Boxer::Graphic::Widget::Box',
 );
 
-has 'value' => (
-    is  => 'rw',
-    isa => 'Int',
-    documentation => "The value of this constant",
-);
-
 use Boxer::Graphic::Widget::Box;
 
 sub BUILD {
@@ -21,6 +15,11 @@ sub BUILD {
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
     $self->outer_box->fill( 1 );
     $self->outer_box->color( [ 0.0, 0.6, 0.0 ] );
+}
+
+sub value {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 0 );
 }
 
 sub thing_to_highlight {

@@ -1,4 +1,4 @@
-package Boxer::Object;
+package Boxer::Object::LIST;
 
 use Moose::Role;
 
@@ -10,7 +10,7 @@ has 'runtime' => (
 
 sub new {
     my ( $class, $runtime ) = @_;
-    my $self = bless( {}, $class );
+    my $self = bless( { LIST => [] }, $class );
     $self->runtime( $runtime );
 
     $self->send_message( 'new' );
@@ -20,13 +20,28 @@ sub new {
     return $self;
 }
 
-sub PROPERTY {
-    my ( $self, $index, $name, $value ) = @_;
-    if ( defined $value ) {
-        $self->{$name} = $value;
-        $self->send_message( $name, [ $value ] );
-    }
-    return $self->{$name};
+sub GET_INDEX {
+    my ( $self, $index ) = @_;
+    my $value = $self->{LIST}->[$index];
+    $self->send_message( 'GET_INDEX', [ $index, $value ] );
+}
+
+sub SET_INDEX {
+    my ( $self, $index, $value ) = @_;
+    $self->{LIST}->[$index] = $value; # can be undef
+    $self->send_message( 'SET_INDEX', [ $index, $value ] );
+}
+
+sub PUSH {
+    my ( $self, $item ) = @_;
+    my $record = $self->{LIST};
+    push @{ $record }, $item;
+    $self->send_message( 'PUSH', [ $item ] );
+}
+
+sub length {
+    my ( $self, $item ) = @_;
+    return scalar( @{ $self->{LIST} } );
 }
 
 sub send_message {

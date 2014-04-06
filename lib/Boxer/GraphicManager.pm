@@ -9,13 +9,10 @@ has 'screen' => (
 );
 
 my %SUPPORTED = qw(
-    new    1
-    calls  1
-    args   1
-    body   1
-    push   1
-    value  1
-    refs   1
+    new        1
+    PUSH       1
+    SET_INDEX  1
+    GET_INDEX  1
 );
 
 sub BUILD {

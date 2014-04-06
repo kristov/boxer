@@ -8,6 +8,7 @@ with 'Boxer::Graphic';
 has 'outer_box' => (
     is  => 'rw',
     isa => 'Boxer::Graphic::Widget::Box',
+    builder => '_build_outer_box',
 );
 
 has orientation => (
@@ -19,28 +20,19 @@ has orientation => (
 
 sub next {
     my ( $self ) = @_;
-    return $self->{array}->[0];
+    return $self->LIST->[0];
 }
 
-sub BUILD {
+sub _build_outer_box {
     my ( $self ) = @_;
-    $self->outer_box( Boxer::Graphic::Widget::Box->new() );
-    $self->outer_box->fill( 1 );
+    my $outer_box = Boxer::Graphic::Widget::Box->new();
+    $outer_box->fill( 1 );
+    return $outer_box;
 }
 
 sub thing_to_highlight {
     my ( $self ) = @_;
     return $self->outer_box();
-}
-
-sub push {
-    my ( $self, $item ) = @_;
-    $self->{array} ||= [];
-    $item->parent( $self );
-    push @{ $self->{array} }, $item;
-}
-
-sub pop {
 }
 
 sub get_geometry {
@@ -52,7 +44,7 @@ sub get_geometry {
     my $orientation = $self->orientation();
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->{array};
+    my $array = $self->LIST();
 
     my ( $width, $height );
 
@@ -95,7 +87,7 @@ sub draw {
     my $orientation = $self->orientation();
 
     my ( $x, $y ) = $self->get_position();
-    my $array = $self->{array};
+    my $array = $self->LIST();
 
     my $nr_items = scalar( @{ $array } );
 
