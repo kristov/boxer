@@ -13,4 +13,14 @@ sub set_args {
     $self->SET_INDEX( 1, $args );
 }
 
+sub get_calls {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 0 );
+}
+
+sub get_args {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 1 );
+}
+
 1;

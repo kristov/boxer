@@ -11,13 +11,6 @@ has 'outer_box' => (
     builder => '_build_outer_box',
 );
 
-has orientation => (
-    is  => 'rw',
-    isa => 'Str',
-    default => 'horizontal',
-    documentation => "Render this array horizontal or vertical",
-);
-
 sub next {
     my ( $self ) = @_;
     return $self->LIST->[0];
@@ -97,6 +90,7 @@ sub draw {
         $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
         $box->color( [ 0.6, 0.6, 0.1 ] );
         $box->draw( $cr );
+        $self->draw_icon( $cr, $x, $y );
 
         $x += ( $SIZEUNIT + $PADDING );
         for my $thing ( 1 .. $nr_items ) {
@@ -127,6 +121,31 @@ sub draw {
     }
 
     $cr->restore();
+}
+
+sub icon {
+    return [
+        {
+            b => [ 0.1, 0.1, 0.4 ],
+        },
+        qq{
+        ..bbbbbbbbbbbb..
+        .b............b.
+        b..bbbbbbbbbb..b
+        b.b..........b.b
+        b.b..bbbbbb..b.b
+        b.b.b......b.b.b
+        b.b.b..bb..b.b.b
+        b.b.b.b.b..b.b.b
+        b.b.b.b....b.b.b
+        b.b.b..bbbb..b.b
+        b.b.b........b.b
+        b.b..bbbbbbbb..b
+        b.b............b
+        b..bbbbbbbbbbbb.
+        .b..............
+        ..bbbbbbbbbbbbb.
+    } ];
 }
 
 1;

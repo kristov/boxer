@@ -10,7 +10,17 @@ sub set_args {
 
 sub set_body {
     my ( $self, $body ) = @_;
-    return $self->SET_INDEX( 1, $body );
+    $self->SET_INDEX( 1, $body );
+}
+
+sub get_args {
+    my ( $self, $args ) = @_;
+    return $self->GET_INDEX( 0 );
+}
+
+sub get_body {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 1 );
 }
 
 1;

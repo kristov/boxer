@@ -81,7 +81,6 @@ sub draw {
     $y += $PADDING;
 
     for my $item ( @{ $array } ) {
-        $item->orientation( 'horizontal' ) if $item->can( 'orientation' );
         $item->set_position( $x, $y );
         my ( $iwidth, $iheight ) = $item->get_geometry();
         die "$item: " if !$iheight;

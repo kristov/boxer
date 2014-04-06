@@ -10,9 +10,15 @@ has 'outer_box' => (
     isa => 'Boxer::Graphic::Widget::Box',
 );
 
-sub next {
-    my ( $self ) = @_;
-    return $self->GET_INDEX( 0 );
+sub set_calls {
+    my ( $self, $calls ) = @_;
+    $self->SET_INDEX( 0, $calls );
+}
+
+sub set_args {
+    my ( $self, $args ) = @_;
+    $args->orientation( 'horizontal' );
+    $self->SET_INDEX( 1, $args );
 }
 
 sub get_calls {

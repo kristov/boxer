@@ -8,4 +8,9 @@ sub set_refs {
     $self->SET_INDEX( 0, $refs );
 }
 
+sub get_refs {
+    my ( $self ) = @_;
+    return $self->GET_INDEX( 0 );
+}
+
 1;

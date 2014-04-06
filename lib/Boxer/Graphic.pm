@@ -47,6 +47,13 @@ has 'parent' => (
     documentation => "The logical parent of the object",
 );
 
+has orientation => (
+    is  => 'rw',
+    isa => 'Str',
+    default => 'horizontal',
+    documentation => "Render this array horizontal or vertical",
+);
+
 sub get_position {
     my ( $self ) = @_;
     return ( $self->x(), $self->y() );

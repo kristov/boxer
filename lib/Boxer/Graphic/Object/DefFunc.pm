@@ -6,6 +6,16 @@ use Boxer::Graphic::Widget::Box;
 with 'Boxer::Graphic';
 has 'outer_box' => ( isa => 'Boxer::Graphic::Widget::Box', is => 'rw' );
 
+sub set_args {
+    my ( $self, $args ) = @_;
+    $self->SET_INDEX( 0, $args );
+}
+
+sub set_body {
+    my ( $self, $body ) = @_;
+    $self->SET_INDEX( 1, $body );
+}
+
 sub get_args {
     my ( $self ) = @_;
     return $self->GET_INDEX( 0 );
@@ -83,6 +93,7 @@ sub draw {
 
     my $body = $self->get_body();
     if ( $body ) {
+        $body->orientation( 'vertical' );
         $body->set_position( $x + $PADDING, $y + ( $PADDING * 2 ) + $aheight );
         $body->draw( $cr );
     }
