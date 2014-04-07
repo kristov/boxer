@@ -100,7 +100,10 @@ sub BUILD {
     $self->da->size( $width, $height );
     $self->da->signal_connect( expose_event => sub { $self->render( @_ ) } );
     $self->vbox->pack_start( $self->da, 0, 0, 0 );
-    
+
+    my $color = Gtk2::Gdk::Color->new( 0, 0, 0 );
+    $self->da->modify_bg( 'normal', $color );
+
     $self->win->add( $self->vbox );
 
     $self->win->signal_connect( delete_event => sub { exit; } );

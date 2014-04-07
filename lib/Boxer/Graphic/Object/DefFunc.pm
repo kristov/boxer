@@ -34,6 +34,7 @@ sub next {
 sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
+    $self->outer_box->color( [ 0.0, 0.0, 0.4 ] );
     $self->outer_box->fill( 1 );
 }
 
@@ -135,7 +136,7 @@ sub draw {
 sub icon {
     return [
         {
-            b => [ 0.4, 0.1, 0.1 ],
+            b => [ 1, 1, 1 ],
         },
         qq{
         ................
