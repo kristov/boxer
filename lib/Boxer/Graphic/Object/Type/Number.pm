@@ -10,7 +10,7 @@ sub BUILD {
     my ( $self ) = @_;
     $self->outer_box( Boxer::Graphic::Widget::Box->new() );
     $self->outer_box->fill( 1 );
-    $self->outer_box->color( [ 0.6, 0.6, 0.1 ] );
+    $self->outer_box->color( [ 0.0, 0.6, 0.0 ] );
 }
 
 sub thing_to_highlight {
@@ -29,6 +29,7 @@ sub draw {
 
     $cr->save();
 
+    my $PADDING = $self->PADDING();
     my $SIZEUNIT = $self->SIZEUNIT();
 
     my ( $x, $y ) = $self->get_position();
@@ -37,6 +38,12 @@ sub draw {
     $outer_box->set_position( $x, $y );
     $outer_box->set_geometry( $SIZEUNIT, $SIZEUNIT );
     $outer_box->draw( $cr );
+
+    $cr->set_source_rgb( 0.0, 0.2, 0.0 );
+    $cr->select_font_face( "Courier", 'normal', 'normal' );
+    $cr->set_font_size( 17.0 );
+    $cr->move_to( $x + $PADDING, $y + $SIZEUNIT - $PADDING );
+    $cr->show_text( "x" );
 
     $cr->restore();
 }

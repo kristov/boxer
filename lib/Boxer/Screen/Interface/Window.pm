@@ -44,6 +44,14 @@ has 'current_interface' => (
     documentation => "",
 );
 
+sub keys {
+    my ( $self ) = @_;
+    return {
+        tab    => sub { $self->tab_pressed },
+        _other => sub { $self->dispatch_to_context( @_ ) },
+    };
+}
+
 sub BUILD {
     my ( $self ) = @_;
 
@@ -75,7 +83,7 @@ sub draw {
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING = $self->PADDING();
 
-    my $heap_width = 150;
+    my $heap_width = 40;
     my $message_height = $SIZEUNIT + ( $PADDING * 2 );
     my $clip_height = $SIZEUNIT + ( $PADDING * 2 );
 
@@ -114,6 +122,11 @@ sub tab_pressed {
         $self->work->highlight( 0 );
         $self->context( $self->heap );
     }
+}
+
+sub dispatch_to_context {
+    my ( $self, $key ) = @_;
+    $self->context->dispatch_keypress( $key );
 }
 
 sub set_context {

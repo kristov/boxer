@@ -49,6 +49,10 @@ sub get_geometry {
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING  = $self->PADDING();
 
+    if ( !$self->expanded ) {
+        return ( $SIZEUNIT, $SIZEUNIT );
+    }
+
     my ( $width, $height );
     my ( $argw, $argh );
 
@@ -96,18 +100,46 @@ sub draw {
     $outer_box->set_position( $x, $y );
     $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
+    $self->draw_icon( $cr, $x, $y ) if !$self->expanded;
 
-    if ( $greffunc ) {
-        $greffunc->set_position( $x + $PADDING, $y + $PADDING );
-        $greffunc->draw( $cr );
-    }
+    if ( $self->expanded ) {
+        if ( $greffunc ) {
+            $greffunc->set_position( $x + $PADDING, $y + $PADDING );
+            $greffunc->draw( $cr );
+        }
 
-    if ( $gargs ) {
-        $gargs->set_position( $x + $width + ( $PADDING * 2 ), $y + $PADDING );
-        $gargs->draw( $cr );
+        if ( $gargs ) {
+            $gargs->set_position( $x + $width + ( $PADDING * 2 ), $y + $PADDING );
+            $gargs->draw( $cr );
+        }
     }
 
     $cr->restore();
+}
+
+sub icon {
+    return [
+        {
+            b => [ 0.1, 0.1, 0.4 ],
+        },
+        qq{
+        ................
+        .......b....bbb.
+        ......b....b...b
+        .....b.....b...b
+        ....b......b....
+        ...b.......b....
+        ..b......bbbbbb.
+        .b.........b....
+        bbbbbbbb...b....
+        .b.........b....
+        ..b........b....
+        ...b.......b....
+        ....b...b..b....
+        .....b...bb.....
+        ......b.........
+        .......b........
+    } ];
 }
 
 1;

@@ -4,7 +4,6 @@ use Moose;
 use Boxer::Graphic::Widget::Box;
 
 with 'Boxer::Screen::Interface';
-with 'Boxer::Screen::Interface::ListLike';
 
 has 'window' => (
     is  => 'rw',
@@ -12,12 +11,12 @@ has 'window' => (
     documentation => "The window this heap interface is connected to",
 );
 
-sub hooks {
+sub keys {
     my ( $self ) = @_;
     return {
-        unselected => sub { $self->heap->highlight_element( $_[0], 0 ) },
-        selected   => sub { $self->heap->highlight_element( $_[0], 1 ) },
-        enter      => sub { $self->heap->enter_on_item( $_[0] ) },
+        up    => sub { $self->heap->select_prev_item() },
+        down  => sub { $self->heap->select_next_item() },
+        enter => sub { $self->heap->enter_on_item() },
     };
 }
 

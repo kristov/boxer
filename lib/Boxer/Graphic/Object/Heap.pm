@@ -23,36 +23,19 @@ sub get_geometry {
     my $height = 0;
     my $max_width = $SIZEUNIT;
     for my $item ( @{ $array } ) {
+        my $expanded = $item->expanded();
+        $item->expanded( 0 );
         my ( $iwidth, $iheight ) = $item->get_geometry();
+        $item->expanded( $expanded );
         $height += $iheight;
         $max_width = $iwidth if $iwidth > $max_width;
     }
     $height += ( $nr_spaces * $PADDING );
+    $height ||= $SIZEUNIT;
+
+    return ( $SIZEUNIT + ( $PADDING * 2 ), $height );
 
     return ( $max_width + ( $PADDING * 2 ), $height );
-}
-
-sub highlight_element {
-    my ( $self, $index, $highlight ) = @_;
-    my $array = $self->LIST();
-    my $item = $array->[$index];
-    if ( defined $item ) {
-        $item->highlight( $highlight );
-        if ( $highlight ) {
-            my $ref = "$item";
-            $self->graphic_manager->screen->interface->set_message( $ref );
-        }
-    }
-    else {
-        die "item is not defined\n";
-    }
-}
-
-sub enter_on_item {
-    my ( $self, $index ) = @_;
-    my $array = $self->LIST();
-    my $item = $array->[$index];
-    $self->graphic_manager->screen->interface->set_context( $item );
 }
 
 sub draw {
@@ -81,10 +64,12 @@ sub draw {
     $y += $PADDING;
 
     for my $item ( @{ $array } ) {
+        my $expanded = $item->expanded();
+        $item->expanded( 0 );
         $item->set_position( $x, $y );
         my ( $iwidth, $iheight ) = $item->get_geometry();
-        die "$item: " if !$iheight;
         $item->draw( $cr );
+        $item->expanded( $expanded );
         $y += ( $iheight + $PADDING );
     }
 

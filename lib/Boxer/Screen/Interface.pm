@@ -98,7 +98,10 @@ sub dispatch_keypress {
 
     my $keys = $self->keys();
     if ( defined $keys->{$key} ) {
-        $keys->{$key}->();
+        $keys->{$key}->( $key );
+    }
+    elsif ( defined $keys->{_other} ) {
+        $keys->{_other}->( $key );
     }
 }
 

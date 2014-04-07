@@ -27,6 +27,13 @@ has 'highlighted' => (
     documentation => "If set to 1, the element is highlighted in some way",
 );
 
+has 'expanded' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 1,
+    documentation => "If set to 1, the element is expanded",
+);
+
 has 'PADDING' => (
     is  => 'rw',
     isa => 'Int',
@@ -54,6 +61,12 @@ has orientation => (
     documentation => "Render this array horizontal or vertical",
 );
 
+has 'selected_index' => (
+    is      => "rw",
+    isa     => "Int",
+    default => 0,
+);
+
 sub get_position {
     my ( $self ) = @_;
     return ( $self->x(), $self->y() );
@@ -63,6 +76,69 @@ sub set_position {
     my ( $self, $x, $y ) = @_;
     $self->x( $x );
     $self->y( $y );
+}
+
+sub select_prev_item {
+    my ( $self ) = @_;
+
+    my $length = $self->length();
+    return if $length == 0;
+
+    my $index = $self->selected_index();
+    if ( $index == 0 ) {
+        $self->highlight_element( $index, 0 );
+        $index = $length - 1;
+    }
+    else {
+        $self->highlight_element( $index, 0 );
+        $index--;
+    }
+    $self->selected_index( $index );
+    $self->highlight_element( $index, 1 );
+}
+
+sub select_next_item {
+    my ( $self ) = @_;
+
+    my $length = $self->length();
+    return if $length == 0;
+
+    my $index = $self->selected_index();
+    if ( $index >= ( $length - 1 ) ) {
+        $self->highlight_element( $index, 0 );
+        $index = 0;
+    }
+    else {
+        $self->highlight_element( $index, 0 );
+        $index++;
+    }
+    $self->selected_index( $index );
+    $self->highlight_element( $index, 1 );
+}
+
+sub enter_on_item {
+    my ( $self ) = @_;
+    my $index = $self->selected_index();
+    $self->highlight_element( $index, 0 );
+    my $array = $self->LIST();
+    my $item = $array->[$index];
+    $self->graphic_manager->screen->interface->set_context( $item );
+}
+
+sub highlight_element {
+    my ( $self, $index, $highlight ) = @_;
+    my $array = $self->LIST();
+    my $item = $array->[$index];
+    if ( defined $item ) {
+        $item->highlight( $highlight );
+        if ( $highlight ) {
+            my $ref = "$item";
+            $self->graphic_manager->screen->interface->set_message( $ref );
+        }
+    }
+    else {
+        die "item is not defined\n";
+    }
 }
 
 sub highlight {

@@ -50,7 +50,7 @@ sub draw {
     my $value = $self->value();
     if ( $value ) {
         $cr->set_source_rgb( 0.0, 0.2, 0.0 );
-        $cr->select_font_face( "Sans", 'normal', 'normal' );
+        $cr->select_font_face( "Courier", 'normal', 'normal' );
         $cr->set_font_size( 17.0 );
         $cr->move_to( $x + $PADDING, $y + $SIZEUNIT - $PADDING );
         $cr->show_text( $value );

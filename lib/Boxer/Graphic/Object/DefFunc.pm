@@ -48,24 +48,47 @@ sub get_geometry {
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING = $self->PADDING();
 
+    if ( !$self->expanded ) {
+        return ( $SIZEUNIT, $SIZEUNIT );
+    }
+
+    my ( $width, $height ) = ( 0, 0 );
+
     my $args = $self->get_args();
-    my ( $width, $height );
+    my ( $awidth, $aheight ) = ( 0, 0 );
     if ( $args ) {
-        ( $width, $height ) = $args->get_geometry();
+        ( $awidth, $aheight ) = $args->get_geometry();
     }
-    else {
-        ( $width, $height ) = ( $SIZEUNIT, $SIZEUNIT );
-    }
+    $width = $awidth if $awidth > $width;
 
     my $body = $self->get_body();
+    my ( $bwidth, $bheight ) = ( 0, 0 );
     if ( $body ) {
         $body->orientation( 'vertical' );
-        my ( $bwidth, $bheight ) = $body->get_geometry();
-        $width = $bwidth if $bwidth > $width;
-        $height += $bheight + $PADDING;
+        ( $bwidth, $bheight ) = $body->get_geometry();
+    }
+    $width = $bwidth if $bwidth > $width;
+
+    if ( $width ) {
+        $width += ( $PADDING * 2 );
+    }
+    else {
+        $width = $SIZEUNIT;
+    }
+    if ( $aheight && $bheight ) {
+        $height = $aheight + $bheight + ( $PADDING * 3 );
+    }
+    elsif ( $aheight ) {
+        $height = $aheight + ( $PADDING * 2 );
+    }
+    elsif ( $bheight ) {
+        $height = $bheight + ( $PADDING * 2 );
+    }
+    else {
+        $height = $SIZEUNIT;
     }
 
-    return ( $width + ( $PADDING * 2 ), $height + ( $PADDING * 2 ) );
+    return ( $width, $height );
 }
 
 sub draw {
@@ -82,23 +105,56 @@ sub draw {
     $outer_box->set_position( $x, $y );
     $outer_box->set_geometry( $self->get_geometry() );
     $outer_box->draw( $cr );
+    $self->draw_icon( $cr, $x, $y ) if !$self->expanded;
 
-    my $args = $self->get_args();
-    my ( $awidth, $aheight ) = ( 0, 0 );
-    if ( $args ) {
-        ( $awidth, $aheight ) = $args->get_geometry();
-        $args->set_position( $x + $PADDING, $y + $PADDING );
-        $args->draw( $cr );
-    }
+    if ( $self->expanded ) {
+        my $args = $self->get_args();
+        my ( $awidth, $aheight ) = ( 0, 0 );
+        if ( $args ) {
+            ( $awidth, $aheight ) = $args->get_geometry();
+            $args->set_position( $x + $PADDING, $y + $PADDING );
+            $args->draw( $cr );
+        }
 
-    my $body = $self->get_body();
-    if ( $body ) {
-        $body->orientation( 'vertical' );
-        $body->set_position( $x + $PADDING, $y + ( $PADDING * 2 ) + $aheight );
-        $body->draw( $cr );
+        my $body = $self->get_body();
+        if ( $body ) {
+            $body->orientation( 'vertical' );
+            if ( $aheight ) {
+                $body->set_position( $x + $PADDING, $y + ( $PADDING * 2 ) + $aheight );
+            }
+            else {
+                $body->set_position( $x + $PADDING, $y + $PADDING );
+            }
+            $body->draw( $cr );
+        }
     }
 
     $cr->restore();
+}
+
+sub icon {
+    return [
+        {
+            b => [ 0.4, 0.1, 0.1 ],
+        },
+        qq{
+        ................
+        ........bbb.....
+        .......b...b....
+        .......b...b....
+        .......b........
+        .......b........
+        .....bbbbbb.....
+        .......b........
+        .......b........
+        .......b........
+        .......b........
+        .......b........
+        ....b..b........
+        .....bb.........
+        ................
+        ................
+    } ];
 }
 
 1;

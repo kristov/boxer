@@ -231,7 +231,6 @@ sub handle_keypress {
 
     my $keyval = $event->keyval();
 
-print "$keyval\n";
     my $directional = {
         'up',
         'down',
@@ -246,22 +245,17 @@ print "$keyval\n";
         65363 => 'right',
         65293 => 'enter',
         65289 => 'tab',
+        105   => 'i',
+        109   => 'm',
     };
 
-    if ( $code2key->{$keyval} && $code2key->{$keyval} eq 'tab' ) {
-        $self->interface->tab_pressed();
-        $self->needs_draw( 1 );
-        $self->process;
-        return 1;
-    }
-
-    my $gobject = $self->interface->context();
-    #my $heapref = $self->runtime->heap();
-    #my $gobject = $self->graphic_manager->graphic_object_from_object( $heapref );
-
     if ( $code2key->{$keyval} ) {
-        $gobject->dispatch_keypress( $code2key->{$keyval} );
+        $self->interface->dispatch_keypress( $code2key->{$keyval} );
     }
+    else {
+        print "unknown key: $keyval\n";
+    }
+
     $self->needs_draw( 1 );
     $self->process;
 

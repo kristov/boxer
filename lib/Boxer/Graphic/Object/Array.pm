@@ -34,9 +34,12 @@ sub get_geometry {
     my $SIZEUNIT = $self->SIZEUNIT();
     my $PADDING  = $self->PADDING();
 
+    if ( !$self->expanded ) {
+        return ( $SIZEUNIT, $SIZEUNIT );
+    }
+
     my $orientation = $self->orientation();
 
-    my ( $x, $y ) = $self->get_position();
     my $array = $self->LIST();
 
     my ( $width, $height );
@@ -92,14 +95,17 @@ sub draw {
         $box->draw( $cr );
         $self->draw_icon( $cr, $x, $y );
 
-        $x += ( $SIZEUNIT + $PADDING );
-        for my $thing ( 1 .. $nr_items ) {
-            my $idx = $thing - 1;
-            $box->set_position( $x, $y );
-            $box->set_geometry( $SIZEUNIT, $SIZEUNIT );
-            $box->color( [ 0.1, 0.6, 0.6 ] );
-            $box->draw( $cr );
+        if ( $self->expanded ) {
             $x += ( $SIZEUNIT + $PADDING );
+            for my $thing ( 1 .. $nr_items ) {
+                my $idx = $thing - 1;
+                my $gobject = $array->[$idx];
+                $gobject->set_position( $x, $y );
+                #$gobject->set_geometry( $SIZEUNIT, $SIZEUNIT );
+                #$box->color( [ 0.1, 0.6, 0.6 ] );
+                $gobject->draw( $cr );
+                $x += ( $SIZEUNIT + $PADDING );
+            }
         }
     }
     elsif ( $orientation eq 'vertical' ) {
@@ -107,16 +113,19 @@ sub draw {
         my $box = $self->outer_box();
         $box->set_position( $x, $y );
         $box->set_geometry( $width, $height );
-        $box->color( [ 1.0, 0.4, 0.0 ] );
+        $box->color( [ 0.6, 0.6, 0.1 ] );
+        #$box->color( [ 1.0, 0.4, 0.0 ] );
         $box->draw( $cr );
 
-        $x += $PADDING;
-        $y += $PADDING;
-        for my $item ( @{ $array } ) {
-            my ( $iwidth, $iheight ) = $item->get_geometry();
-            $item->set_position( $x, $y );
-            $item->draw( $cr );
-            $y += ( $iheight + $PADDING );
+        if ( $self->expanded ) {
+            $x += $PADDING;
+            $y += $PADDING;
+            for my $item ( @{ $array } ) {
+                my ( $iwidth, $iheight ) = $item->get_geometry();
+                $item->set_position( $x, $y );
+                $item->draw( $cr );
+                $y += ( $iheight + $PADDING );
+            }
         }
     }
 

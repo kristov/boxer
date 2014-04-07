@@ -25,6 +25,13 @@ has 'context' => (
     documentation => "Thing being viewed",
 );
 
+has 'mode' => (
+    is  => 'rw',
+    isa => 'Str',
+    default => 'new',
+    documentation => "Thing being viewed",
+);
+
 sub _build_codeview {
     my ( $self ) = @_;
     my $codeview = Boxer::Screen::CodeView::Traditional->new();
@@ -39,6 +46,7 @@ sub keys {
         down  => sub { $self->down() },
         left  => sub { $self->left() },
         right => sub { $self->right() },
+        m     => sub { $self->mode eq 'new' ? $self->mode( 'traditional' ) : $self->mode( 'new' ) } 
     };
 }
 
@@ -46,9 +54,13 @@ sub up {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
-        if ( $context->orientation() eq '' ) {
+        if ( $context->orientation() eq 'vertical' ) {
+            $context->select_prev_item();
         }
-        print STDERR "$context\n";
+        elsif ( $context->orientation() eq 'horizontal' ) {
+            #$context = $context->parent();
+            #$self->context( $context );
+        }
     }
 }
 
@@ -56,6 +68,13 @@ sub down {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
+        if ( $context->orientation() eq 'vertical' ) {
+            $context->select_next_item();
+        }
+        elsif ( $context->orientation() eq 'horizontal' ) {
+            #$context = $context->parent();
+            #$self->context( $context );
+        }
     }
 }
 
@@ -63,12 +82,13 @@ sub left {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
-        my $parent = $context->parent();
-        if ( !$parent ) {
-            print STDERR "context $context has no parent, so it better be main()\n";
-            return;
+        if ( $context->orientation() eq 'vertical' ) {
+            #$context = $context->parent();
+            #$self->context( $context );
         }
-        $self->context( $parent );
+        elsif ( $context->orientation() eq 'horizontal' ) {
+            $context->select_prev_item();
+        }
     }
 }
 
@@ -76,12 +96,27 @@ sub right {
     my ( $self ) = @_;
     my $context = $self->context();
     if ( $context ) {
-        my $next = $context->next();
-        $self->context( $next );
+        if ( $context->orientation() eq 'vertical' ) {
+            #$context = $context->parent();
+            #$self->context( $context );
+        }
+        elsif ( $context->orientation() eq 'horizontal' ) {
+            $context->select_next_item();
+        }
     }
 }
 
-sub draw_new {
+sub draw {
+    my ( $self, $cr ) = @_;
+    if ( $self->mode eq 'traditional' ) {
+        $self->draw_traditional( $cr );
+    }
+    else {
+        $self->draw_thing( $cr );
+    }
+}
+
+sub draw_traditional {
     my ( $self, $cr ) = @_;
 
     $cr->save();
@@ -106,7 +141,7 @@ sub draw_new {
     $cr->restore();
 }
 
-sub draw {
+sub draw_thing {
     my ( $self, $cr ) = @_;
 
     $cr->save();
