@@ -1,6 +1,7 @@
 package Boxer::Graphic;
 
 use Moose::Role;
+use Boxer::Graphic::Widget::Box;
 
 has 'graphic_manager' => (
     is  => 'rw',
@@ -34,6 +35,13 @@ has 'expanded' => (
     documentation => "If set to 1, the element is expanded",
 );
 
+has 'never_expanded' => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 0,
+    documentation => "If set to 1, the element is never expanded",
+);
+
 has 'PADDING' => (
     is  => 'rw',
     isa => 'Int',
@@ -61,11 +69,26 @@ has orientation => (
     documentation => "Render this array horizontal or vertical",
 );
 
+has color => (
+    is  => 'rw',
+    isa => 'ArrayRef',
+    documentation => "Color of the main box",
+);
+
+has text => (
+    is  => 'rw',
+    isa => 'Str',
+    documentation => "Alternative to icon",
+);
+
 has 'selected_index' => (
     is      => "rw",
     isa     => "Int",
     default => 0,
 );
+
+use constant PADDING => 5;
+use constant SIZEUNIT => 20;
 
 sub get_position {
     my ( $self ) = @_;
@@ -143,13 +166,7 @@ sub highlight_element {
 
 sub highlight {
     my ( $self, $highlight ) = @_;
-    my $thing = $self->thing_to_highlight();
-    if ( defined $thing ) {
-        $thing->highlighted( $highlight );
-    }
-    else {
-        die "I dont have a thing_to_highlight!";
-    }
+    $self->highlighted( $highlight );
 }
 
 sub BUILD {
@@ -216,6 +233,179 @@ sub dispatch {
     else {
         print "Boxer::Graphic::dispatch() $self object can not $action\n";
     }
+}
+
+sub get_geometry {
+    my ( $self ) = @_;
+    if ( !$self->expanded || $self->never_expanded ) {
+        return $self->get_geometry_not_expanded();
+    }
+    else {
+        return $self->get_geometry_expanded();
+    }
+}
+
+sub draw {
+    my ( $self, $cr ) = @_;
+    if ( !$self->expanded || $self->never_expanded ) {
+        $self->draw_not_expanded( $cr );
+    }
+    else {
+        $self->draw_expanded( $cr );
+    }
+}
+
+sub get_geometry_not_expanded {
+    my ( $self ) = @_;
+    return ( SIZEUNIT, SIZEUNIT );
+}
+
+sub draw_not_expanded {
+    my ( $self, $cr ) = @_;
+    $cr->save();
+    my ( $x, $y ) = $self->get_position();
+
+    my $box = Boxer::Graphic::Widget::Box->new();
+    my $color = $self->color;
+    $box->color( $color ) if $color;
+    $box->fill( 1 );
+    $box->highlighted( 1 ) if $self->highlighted();
+    $box->set_position( $x, $y );
+    $box->set_geometry( SIZEUNIT, SIZEUNIT );
+    $box->draw( $cr );
+    if ( $self->text ) {
+        $cr->set_source_rgb( 0.0, 0.2, 0.0 );
+        $cr->select_font_face( "Courier", 'normal', 'normal' );
+        $cr->set_font_size( 17.0 );
+        $cr->move_to( $x + PADDING, $y + SIZEUNIT - PADDING );
+        $cr->show_text( $self->text );
+    }
+    else {
+        $self->draw_icon( $cr, $x, $y ) if $self->can( 'icon' );
+    }
+
+    $cr->restore();
+}
+
+sub get_geometry_expanded {
+    my ( $self ) = @_;
+
+    my $orientation = $self->orientation();
+
+    my $LIST = $self->LIST();
+    my $length = 0;
+    for my $item ( @{ $LIST } ) {
+        $length++ if defined $item;
+    }
+
+    my $totaldim = 0;
+    my ( $maxwidth, $maxheight ) = ( SIZEUNIT, SIZEUNIT );
+    my ( $width, $height );
+
+    if ( $length ) {
+        my $list_orientation;
+        if ( $self->can( 'list_orientation' ) ) {
+            $list_orientation = $self->list_orientation();
+        }
+        my $idx = 0;
+        for my $item ( @{ $LIST } ) {
+            my $iorientation = 'horizontal';
+            if ( $list_orientation ) {
+                $iorientation = $list_orientation->[$idx];
+            }
+            $idx++;
+            next if !defined $item;
+
+            $item->orientation( $iorientation );
+
+            my ( $iwidth, $iheight ) = $item->get_geometry();
+            if ( $iwidth > $maxwidth ) {
+                $maxwidth = $iwidth;
+            }
+            if ( $iheight > $maxheight ) {
+                $maxheight = $iheight;
+            }
+            if ( $orientation eq 'vertical' ) {
+                $totaldim += $iheight;
+            }
+            else {
+                $totaldim += $iwidth;
+            }
+            $totaldim += PADDING;
+        }
+        $totaldim += PADDING;
+
+        if ( $orientation eq 'vertical' ) {
+            ( $width, $height ) = ( $maxwidth + ( PADDING * 2 ), $totaldim );
+            $height += PADDING + SIZEUNIT; # for the icon
+        }
+        else {
+            ( $width, $height ) = ( $totaldim, $maxheight + ( PADDING * 2 ) );
+            $width += PADDING + SIZEUNIT; # for the icon
+        }
+    }
+    else {
+        ( $width, $height ) = ( SIZEUNIT, SIZEUNIT );
+    }
+    return ( $width, $height );
+}
+
+sub draw_expanded {
+    my ( $self, $cr ) = @_;
+    $cr->save();
+
+    my ( $x, $y ) = $self->get_position();
+    my $orientation = $self->orientation();
+
+    my $LIST = $self->LIST();
+    my $length = 0;
+    for my $item ( @{ $LIST } ) {
+        $length++ if defined $item;
+    }
+
+    my ( $width, $height ) = $self->get_geometry_expanded();
+
+    my $box = Boxer::Graphic::Widget::Box->new();
+    my $color = $self->color;
+    $box->color( $color ) if $color;
+    $box->fill( 1 );
+    $box->highlighted( 1 ) if $self->highlighted();
+    $box->set_position( $x, $y );
+    $box->set_geometry( $width, $height );
+    $box->draw( $cr );
+
+    $x += PADDING;
+    $y += PADDING;
+    if ( $self->can( 'icon' ) ) {
+        $self->draw_icon( $cr, $x, $y ) if $self->can( 'icon' );
+        if ( $orientation eq 'vertical' ) {
+            $y += SIZEUNIT;
+            $y += PADDING;
+        }
+        else {
+            $x += SIZEUNIT;
+            $x += PADDING;
+        }
+    }
+
+    if ( $length ) {
+        for my $item ( @{ $LIST } ) {
+            next if !defined $item;
+            my ( $iwidth, $iheight ) = $item->get_geometry();
+            $item->set_position( $x, $y );
+            $item->draw( $cr );
+            if ( $orientation eq 'vertical' ) {
+                $y += $iheight;
+                $y += PADDING;
+            }
+            else {
+                $x += $iwidth;
+                $x += PADDING;
+            }
+        }
+    }
+
+    $cr->restore();
 }
 
 sub _icon_text_to_data {
