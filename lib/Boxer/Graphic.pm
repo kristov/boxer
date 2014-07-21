@@ -148,6 +148,24 @@ sub enter_on_item {
     $self->graphic_manager->screen->interface->set_context( $item );
 }
 
+sub select_first_sensible_thing {
+    my ( $self ) = @_;
+    my $index = $self->selected_index();
+    my $array = $self->LIST();
+    my $item = $array->[$index];
+    if ( !defined $item ) {
+        for my $new_index ( $index .. scalar( @{ $array } ) - 1 ) {
+            $index = $new_index;
+            $item = $array->[$index];
+            last if defined $item;
+        }
+    }
+    $self->selected_index( $index );
+    $self->highlight( 0 );
+    $item->highlight( 0 );
+    return $item;
+}
+
 sub highlight_element {
     my ( $self, $index, $highlight ) = @_;
     my $array = $self->LIST();

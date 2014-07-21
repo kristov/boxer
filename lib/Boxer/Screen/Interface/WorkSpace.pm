@@ -46,8 +46,16 @@ sub keys {
         down  => sub { $self->down() },
         left  => sub { $self->left() },
         right => sub { $self->right() },
+        enter => sub { $self->enter() },
         m     => sub { $self->mode eq 'new' ? $self->mode( 'traditional' ) : $self->mode( 'new' ) } 
     };
+}
+
+sub enter {
+    my ( $self ) = @_;
+    my $context = $self->context();
+    $context = $context->select_first_sensible_thing();
+    $self->context( $context );
 }
 
 sub up {
